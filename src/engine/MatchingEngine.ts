@@ -135,6 +135,16 @@ export default class MatchingEngine {
 		}
 	}
 
+	getMarketPrice() {
+		if (this.buyOrders.isEmpty() || this.sellOrders.isEmpty()) {
+			return null;
+		}
+
+		const bestBid = this.buyOrders.peek().price;
+		const bestAsk = this.sellOrders.peek().price;
+
+		return (bestBid + bestAsk) / 2;
+	}
 
 	// Get order book snapshot
 	getOrderBook(depth = 10) {

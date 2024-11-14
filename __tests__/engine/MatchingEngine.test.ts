@@ -167,4 +167,45 @@ describe("MatchingEngine", () => {
         expect(orderBook.asks).toEqual([{ price: 105, amount: 30 }]);
         expect(orderBook.bids).toEqual([{ price: 100, amount: 50 }]);
     })
+
+    test("should calculate the market price correctly", () => {
+        const buyOrder: Order = {
+            id: "789",
+            side: "buy",
+            price: 100,
+            amount: 50,
+            timestamp: 1632000000000,
+        };
+
+        const sellOrder: Order = {
+            id: "102",
+            side: "sell",
+            price: 200,
+            amount: 20,
+            timestamp: 1632000000000,
+        };
+
+        engine.submitOrder(sellOrder);
+        engine.submitOrder(buyOrder);
+
+        expect(engine.getMarketPrice()).toBe(150) // average sell and order prices
+    })
+
+    test("should be null if no buy order or sell order exists", () => {
+        expect(engine.getMarketPrice()).toBeNull() // no buy or sell orders
+    })
+
+    test("should be null if buy order exists, but not sell order", () => {
+        const buyOrder: Order = {
+            id: "789",
+            side: "buy",
+            price: 100,
+            amount: 50,
+            timestamp: 1632000000000,
+        };
+
+        engine.submitOrder(buyOrder);
+
+        expect(engine.getMarketPrice()).toBeNull() // no sell order
+    })
 });
