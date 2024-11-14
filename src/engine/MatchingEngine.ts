@@ -11,9 +11,11 @@ export default class MatchingEngine {
 		this.buyOrders = new PriorityQueue(
 			(a: Order, b: Order) => b.price - a.price
 		); // Higher price has priority
+        
 		this.sellOrders = new PriorityQueue(
 			(a: Order, b: Order) => a.price - b.price
 		); // Lower price has priority
+
 		this.trades = [];
 		this.orderBook = {
 			bids: new Map(),
@@ -33,8 +35,8 @@ export default class MatchingEngine {
 		if (order.side === "buy") {
 			this.matchBuyOrder(order);
 		} else if (order.side === "sell") {
-            this.matchSellOrder(order);
-        }
+			this.matchSellOrder(order);
+		}
 
 		this.updateOrderBook();
 		return order;
@@ -63,60 +65,60 @@ export default class MatchingEngine {
 
 			this.trades.push(trade);
 
-            // Update order amounts
-            buyOrder.amount -= matchAmount;
-            matchedSell.amount -= matchAmount;
+			// Update order amounts
+			buyOrder.amount -= matchAmount;
+			matchedSell.amount -= matchAmount;
 
-            // if sell order still has amount remaining, add it back to the queue
-            if (matchedSell.amount > 0) {
-                this.sellOrders.add(matchedSell);
-            }
+			// if sell order still has amount remaining, add it back to the queue
+			if (matchedSell.amount > 0) {
+				this.sellOrders.add(matchedSell);
+			}
 		}
 
-        // if buy order still has amount remaining, add it back to the queue
-        if (buyOrder.amount > 0) {
-            this.buyOrders.add(buyOrder);
-        }
+		// if buy order still has amount remaining, add it back to the queue
+		if (buyOrder.amount > 0) {
+			this.buyOrders.add(buyOrder);
+		}
 	}
 
-    matchSellOrder(sellOrder: Order) {
-        while (!this.buyOrders.isEmpty() && sellOrder.amount > 0) {
-            const bestBuy = this.buyOrders.peek();
+	matchSellOrder(sellOrder: Order) {
+		while (!this.buyOrders.isEmpty() && sellOrder.amount > 0) {
+			const bestBuy = this.buyOrders.peek();
 
-            // if the sell price is higher than buy price, no match possible
-            if (sellOrder.price > bestBuy.price) {
-                break;
-            }
+			// if the sell price is higher than buy price, no match possible
+			if (sellOrder.price > bestBuy.price) {
+				break;
+			}
 
-            const matchedBuy = this.buyOrders.poll()!;
+			const matchedBuy = this.buyOrders.poll()!;
 			const matchAmount = Math.min(sellOrder.amount, matchedBuy.amount);
 
-            // Create trade at buy order price (price/time priority)
-            const trade = {
-                buyOrderId: matchedBuy.id,
-                sellOrderId: sellOrder.id,
-                price: matchedBuy.price,
-                amount: matchAmount,
+			// Create trade at buy order price (price/time priority)
+			const trade = {
+				buyOrderId: matchedBuy.id,
+				sellOrderId: sellOrder.id,
+				price: matchedBuy.price,
+				amount: matchAmount,
 				timestamp: Date.now(),
-            };
+			};
 
-            this.trades.push(trade);
+			this.trades.push(trade);
 
-            //update order amounts
-            sellOrder.amount -= matchAmount;
-            matchedBuy.amount -= matchAmount;
+			//update order amounts
+			sellOrder.amount -= matchAmount;
+			matchedBuy.amount -= matchAmount;
 
-            // if buy order still has amount remaining, add it back to queue
-            if (matchedBuy.amount > 0) {
+			// if buy order still has amount remaining, add it back to queue
+			if (matchedBuy.amount > 0) {
 				this.buyOrders.add(matchedBuy);
-            }
-        }
+			}
+		}
 
-        // if sell order still has amount remaining, add to queue
-        if (sellOrder.amount > 0) {
+		// if sell order still has amount remaining, add to queue
+		if (sellOrder.amount > 0) {
 			this.sellOrders.add(sellOrder);
-        }
-    }
+		}
+	}
 
 	updateOrderBook() {
 		this.orderBook.bids.clear();
@@ -160,4 +162,7 @@ export default class MatchingEngine {
 		};
 	}
 
+	getRecentTrades(limit = 50) {
+		return this.trades.slice(-limit);
+	}
 }
