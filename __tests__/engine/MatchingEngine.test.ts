@@ -15,6 +15,8 @@ describe("MatchingEngine", () => {
 			price: 100,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		engine.submitOrder(order);
@@ -32,6 +34,8 @@ describe("MatchingEngine", () => {
 			price: 200,
 			amount: 5,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		engine.submitOrder(order);
@@ -52,6 +56,8 @@ describe("MatchingEngine", () => {
 			price: 100,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		const sellOrder: Order = {
@@ -60,6 +66,8 @@ describe("MatchingEngine", () => {
 			price: 95,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		// submit sell order first and then set a buy order to match
@@ -87,6 +95,8 @@ describe("MatchingEngine", () => {
 			price: 100,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		const sellOrder: Order = {
@@ -95,6 +105,8 @@ describe("MatchingEngine", () => {
 			price: 200,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		// submit sell order first and then set a buy order to match
@@ -113,6 +125,8 @@ describe("MatchingEngine", () => {
 			price: 100,
 			amount: 30,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
 		const sellOrder: Order = {
@@ -121,9 +135,11 @@ describe("MatchingEngine", () => {
 			price: 90,
 			amount: 10,
 			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
 		};
 
-        engine.submitOrder(sellOrder);
+		engine.submitOrder(sellOrder);
 		engine.submitOrder(buyOrder);
 
 		expect(engine["trades"].length).toBe(1);
@@ -137,116 +153,198 @@ describe("MatchingEngine", () => {
 		});
 
 		expect(engine["buyOrders"].isEmpty()).toBe(false);
-        expect(engine["buyOrders"].peek().amount).toBe(20); // still 20 left
+		expect(engine["buyOrders"].peek().amount).toBe(20); // still 20 left
 
 		expect(engine["sellOrders"].isEmpty()).toBe(true);
 	});
 
-    test("should update the order book after submitting orders", () => {
-        const buyOrder: Order = {
-            id: "789",
-            side: "buy",
-            price: 100,
-            amount: 50,
-            timestamp: 1632000000000,
-        };
+	test("should update the order book after submitting orders", () => {
+		const buyOrder: Order = {
+			id: "789",
+			side: "buy",
+			price: 100,
+			amount: 50,
+			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
+		};
 
-        const sellOrder: Order = {
-            id: "101",
-            side: "sell",
-            price: 105,
-            amount: 30,
-            timestamp: 1632000000000,
-        };
+		const sellOrder: Order = {
+			id: "101",
+			side: "sell",
+			price: 105,
+			amount: 30,
+			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
+		};
 
-        engine.submitOrder(sellOrder);
-        engine.submitOrder(buyOrder);
+		engine.submitOrder(sellOrder);
+		engine.submitOrder(buyOrder);
 
-        const orderBook = engine.getOrderBook();
+		const orderBook = engine.getOrderBook();
 
-        expect(orderBook.asks).toEqual([{ price: 105, amount: 30 }]);
-        expect(orderBook.bids).toEqual([{ price: 100, amount: 50 }]);
-    })
+		expect(orderBook.asks).toEqual([{ price: 105, amount: 30 }]);
+		expect(orderBook.bids).toEqual([{ price: 100, amount: 50 }]);
+	});
 
-    test("should calculate the market price correctly", () => {
-        const buyOrder: Order = {
-            id: "789",
-            side: "buy",
-            price: 100,
-            amount: 50,
-            timestamp: 1632000000000,
-        };
+	test("should calculate the market price correctly", () => {
+		const buyOrder: Order = {
+			id: "789",
+			side: "buy",
+			price: 100,
+			amount: 50,
+			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
+		};
 
-        const sellOrder: Order = {
-            id: "102",
-            side: "sell",
-            price: 200,
-            amount: 20,
-            timestamp: 1632000000000,
-        };
+		const sellOrder: Order = {
+			id: "102",
+			side: "sell",
+			price: 200,
+			amount: 20,
+			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
+		};
 
-        engine.submitOrder(sellOrder);
-        engine.submitOrder(buyOrder);
+		engine.submitOrder(sellOrder);
+		engine.submitOrder(buyOrder);
 
-        expect(engine.getMarketPrice()).toBe(150) // average sell and order prices
-    })
+		expect(engine.getMarketPrice()).toBe(150); // average sell and order prices
+	});
 
-    test("should be null if no buy order or sell order exists", () => {
-        expect(engine.getMarketPrice()).toBeNull() // no buy or sell orders
-    })
+	test("should be null if no buy order or sell order exists", () => {
+		expect(engine.getMarketPrice()).toBeNull(); // no buy or sell orders
+	});
 
-    test("should be null if buy order exists, but not sell order", () => {
-        const buyOrder: Order = {
-            id: "789",
-            side: "buy",
-            price: 100,
-            amount: 50,
-            timestamp: 1632000000000,
-        };
+	test("should be null if buy order exists, but not sell order", () => {
+		const buyOrder: Order = {
+			id: "789",
+			side: "buy",
+			price: 100,
+			amount: 50,
+			timestamp: 1632000000000,
+			userId: "",
+			currency: "XOF",
+		};
 
-        engine.submitOrder(buyOrder);
+		engine.submitOrder(buyOrder);
 
-        expect(engine.getMarketPrice()).toBeNull() // no sell order
-    })
+		expect(engine.getMarketPrice()).toBeNull(); // no sell order
+	});
 
-    test("should return the correct order book snapshot with specified depth", () => {
-        const buyOrders: Order[] = [
-			{ id: "", side: "buy", price: 102, amount: 1, timestamp: 0 },
-			{ id: "", side: "buy", price: 100, amount: 5, timestamp: 0 },
-			{ id: "", side: "buy", price: 99, amount: 2, timestamp: 0 },
-		];
-		const sellOrders: Order[] = [
-			{ id: "", side: "sell", price: 103, amount: 4, timestamp: 0 },
-			{ id: "", side: "sell", price: 104, amount: 3, timestamp: 0 },
-			{ id: "", side: "sell", price: 105, amount: 1, timestamp: 0 },
-		];
-
-        buyOrders.forEach(order => engine.submitOrder(order));
-        sellOrders.forEach(order => engine.submitOrder(order));
-
-        const orderBook = engine.getOrderBook(2);
-
-        expect(orderBook.bids).toEqual([
-            { price: 102, amount: 1 },
-            { price: 100, amount: 5 },
-        ])
-        expect(orderBook.asks).toEqual([
-            { price: 103, amount: 4 },
-            { price: 104, amount: 3 },
-        ])
-    })
-
-    test("should return recent trades up to the specified limit", () => {
+	test("should return the correct order book snapshot with specified depth", () => {
 		const buyOrders: Order[] = [
-            { id: "", side: "buy", price: 101, amount: 5, timestamp: 0 }
-        ];
+			{
+				id: "",
+				side: "buy",
+				price: 102,
+				amount: 1,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+			{
+				id: "",
+				side: "buy",
+				price: 100,
+				amount: 5,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+			{
+				id: "",
+				side: "buy",
+				price: 99,
+				amount: 2,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+		];
 		const sellOrders: Order[] = [
-			{ id: "", side: "sell", price: 100, amount: 2, timestamp: 0 },
-			{ id: "", side: "sell", price: 100, amount: 3, timestamp: 0 },
+			{
+				id: "",
+				side: "sell",
+				price: 103,
+				amount: 4,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+			{
+				id: "",
+				side: "sell",
+				price: 104,
+				amount: 3,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+			{
+				id: "",
+				side: "sell",
+				price: 105,
+				amount: 1,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
 		];
 
-		buyOrders.forEach(order => engine.submitOrder(order));
-		sellOrders.forEach(order => engine.submitOrder(order));
+		buyOrders.forEach((order) => engine.submitOrder(order));
+		sellOrders.forEach((order) => engine.submitOrder(order));
+
+		const orderBook = engine.getOrderBook(2);
+
+		expect(orderBook.bids).toEqual([
+			{ price: 102, amount: 1 },
+			{ price: 100, amount: 5 },
+		]);
+		expect(orderBook.asks).toEqual([
+			{ price: 103, amount: 4 },
+			{ price: 104, amount: 3 },
+		]);
+	});
+
+	test("should return recent trades up to the specified limit", () => {
+		const buyOrders: Order[] = [
+			{
+				id: "",
+				side: "buy",
+				price: 101,
+				amount: 5,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+		];
+		const sellOrders: Order[] = [
+			{
+				id: "",
+				side: "sell",
+				price: 100,
+				amount: 2,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+			{
+				id: "",
+				side: "sell",
+				price: 100,
+				amount: 3,
+				timestamp: 0,
+				userId: "",
+				currency: "XOF",
+			},
+		];
+
+		buyOrders.forEach((order) => engine.submitOrder(order));
+		sellOrders.forEach((order) => engine.submitOrder(order));
 
 		const recentTrades = engine.getRecentTrades(2);
 
@@ -267,7 +365,7 @@ describe("MatchingEngine", () => {
 		});
 	});
 
-    test("should return an empty list if there are no recent trades", () => {
+	test("should return an empty list if there are no recent trades", () => {
 		const recentTrades = engine.getRecentTrades();
 		expect(recentTrades).toEqual([]);
 	});
