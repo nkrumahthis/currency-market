@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:14-alpine
+    ports:
+     - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=curmarkdb
+      - POSTGRES_USER=curmarkuser
+      - POSTGRES_PASSWORD=curmarksecret
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    networks:
+      - curmark_network
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - curmark_network
+
+volumes:
+  postgres_data:
+
+networks:
+  curmark_network:
+    driver: bridge
