@@ -5,6 +5,7 @@ export default class MatchingEngine {
 	private buyOrders: PriorityQueue<Order>;
 	private sellOrders: PriorityQueue<Order>;
 	private trades: Array<Trade>;
+	private orderBook;
 
 	constructor() {
 		this.buyOrders = new PriorityQueue(
@@ -14,6 +15,10 @@ export default class MatchingEngine {
 			(a: Order, b: Order) => a.price - b.price
 		); // Lower price has priority
 		this.trades = [];
+		this.orderBook = {
+			bids: new Map(),
+			asks: new Map(),
+		};
 	}
 
 	generateOrderId() {
@@ -21,7 +26,7 @@ export default class MatchingEngine {
 		return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
 	}
 
-	submitOrder(order: Order) {
+	submitOrder(order: Order): Order {
 		order.timestamp = Date.now();
 		order.id = this.generateOrderId();
 
@@ -30,6 +35,9 @@ export default class MatchingEngine {
 		} else if (order.side === "sell") {
             this.matchSellOrder(order);
         }
+
+		this.updateOrderBook();
+		return order;
 	}
 
 	matchBuyOrder(buyOrder: Order) {
@@ -81,7 +89,7 @@ export default class MatchingEngine {
             }
 
             const matchedBuy = this.buyOrders.poll()!;
-            const matchAmount = Math.min(sellOrder.amount, matchedBuy.amount)
+			const matchAmount = Math.min(sellOrder.amount, matchedBuy.amount);
 
             // Create trade at buy order price (price/time priority)
             const trade = {
@@ -89,7 +97,7 @@ export default class MatchingEngine {
                 sellOrderId: sellOrder.id,
                 price: matchedBuy.price,
                 amount: matchAmount,
-                timestamp: Date.now()
+				timestamp: Date.now(),
             };
 
             this.trades.push(trade);
@@ -100,14 +108,46 @@ export default class MatchingEngine {
 
             // if buy order still has amount remaining, add it back to queue
             if (matchedBuy.amount > 0) {
-                this.buyOrders.add(matchedBuy)
+				this.buyOrders.add(matchedBuy);
             }
         }
 
         // if sell order still has amount remaining, add to queue
         if (sellOrder.amount > 0) {
-            this.sellOrders.add(sellOrder)
+			this.sellOrders.add(sellOrder);
         }
     }
+
+	updateOrderBook() {
+		this.orderBook.bids.clear();
+		this.orderBook.asks.clear();
+
+		// Group orders by price
+		for (const order of this.buyOrders.values()) {
+			const existingAmount = this.orderBook.bids.get(order.price) || 0;
+			this.orderBook.bids.set(order.price, existingAmount + order.amount);
+		}
+
+		// Group sell orders by price
+		for (const order of this.sellOrders.values()) {
+			const existingAmount = this.orderBook.asks.get(order.price) || 0;
+			this.orderBook.asks.set(order.price, existingAmount + order.amount);
+		}
+	}
+
+
+	// Get order book snapshot
+	getOrderBook(depth = 10) {
+		return {
+			bids: Array.from(this.orderBook.bids.entries())
+				.sort((a, b) => b[0] - a[0])
+				.slice(0, depth)
+				.map(([price, amount]) => ({ price, amount })),
+			asks: Array.from(this.orderBook.asks.entries())
+				.sort((a, b) => a[0] - b[0])
+				.slice(0, depth)
+				.map(([price, amount]) => ({ price, amount })),
+		};
+	}
 
 }

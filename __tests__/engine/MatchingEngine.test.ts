@@ -98,8 +98,8 @@ describe("MatchingEngine", () => {
 		};
 
 		// submit sell order first and then set a buy order to match
-		engine.submitOrder(sellOrder);
 		engine.submitOrder(buyOrder);
+		engine.submitOrder(sellOrder);
 
 		expect(engine["trades"].length).toBe(0);
 		expect(engine["buyOrders"].isEmpty()).toBe(false);
@@ -141,4 +141,30 @@ describe("MatchingEngine", () => {
 
 		expect(engine["sellOrders"].isEmpty()).toBe(true);
 	});
+
+    test("should update the order book after submitting orders", () => {
+        const buyOrder: Order = {
+            id: "789",
+            side: "buy",
+            price: 100,
+            amount: 50,
+            timestamp: 1632000000000,
+        };
+
+        const sellOrder: Order = {
+            id: "101",
+            side: "sell",
+            price: 105,
+            amount: 30,
+            timestamp: 1632000000000,
+        };
+
+        engine.submitOrder(sellOrder);
+        engine.submitOrder(buyOrder);
+
+        const orderBook = engine.getOrderBook();
+
+        expect(orderBook.asks).toEqual([{ price: 105, amount: 30 }]);
+        expect(orderBook.bids).toEqual([{ price: 100, amount: 50 }]);
+    })
 });
