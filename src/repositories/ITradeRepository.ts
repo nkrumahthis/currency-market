@@ -1,14 +1,14 @@
 import { Trade } from "@/types";
 
 export interface ITradeRepository {
-	connect(): Promise<void>;
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
+    getAccountBalance(accountId: string, currency: string): Promise<number>;
+    updateBalance(userId: string, currency: string, amount: number, operation: 'increase' | 'decrease'): Promise<void>;
+    reserveAmount(accountId: string, currency: string, amount: number): Promise<void>;
+    recordTrade(trade: Trade, tradeId: string): Promise<void>;
     startTransaction(): Promise<void>;
     commitTransaction(): Promise<void>;
-	rollbackTransaction(): Promise<void>;
-	getAccountBalance(accountId: string, currency: string): Promise<number>;
-	reserveAmount(accountId: string, currency: string, amount: number): Promise<void>;
-	recordTrade(trade: Trade, tradeId: string): Promise<void>;
-	updateBalance(amount: number, userId: string, currency: string): Promise<void>;
-	increaseBalance(amount: number, userId: string, currency: string): Promise<void>;
-	reduceBalance(amount: number, userId: string, currency: string): Promise<void>;
+    rollbackTransaction(): Promise<void>;
+    close(): Promise<void>;
 }

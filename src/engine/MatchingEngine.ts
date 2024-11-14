@@ -11,7 +11,7 @@ export default class MatchingEngine {
 		this.buyOrders = new PriorityQueue(
 			(a: Order, b: Order) => b.price - a.price
 		); // Higher price has priority
-        
+
 		this.sellOrders = new PriorityQueue(
 			(a: Order, b: Order) => a.price - b.price
 		); // Lower price has priority
@@ -55,12 +55,16 @@ export default class MatchingEngine {
 			const matchAmount = Math.min(buyOrder.amount, matchedSell.amount);
 
 			// Create trade at sell order price (price/time priority)
-			const trade = {
+			const trade: Trade = {
 				buyOrderId: buyOrder.id,
+				buyerId: buyOrder.userId,
+				sellerId: matchedSell.userId,
 				sellOrderId: matchedSell.id,
 				price: matchedSell.price,
 				amount: matchAmount,
 				timestamp: Date.now(),
+				sellCurrency: matchedSell.currency,
+                buyCurrency: buyOrder.currency,
 			};
 
 			this.trades.push(trade);
@@ -94,12 +98,16 @@ export default class MatchingEngine {
 			const matchAmount = Math.min(sellOrder.amount, matchedBuy.amount);
 
 			// Create trade at buy order price (price/time priority)
-			const trade = {
+			const trade: Trade = {
 				buyOrderId: matchedBuy.id,
 				sellOrderId: sellOrder.id,
 				price: matchedBuy.price,
 				amount: matchAmount,
 				timestamp: Date.now(),
+				sellCurrency: sellOrder.currency,
+                buyCurrency: matchedBuy.currency,
+				buyerId: matchedBuy.userId,
+				sellerId: sellOrder.userId,
 			};
 
 			this.trades.push(trade);
