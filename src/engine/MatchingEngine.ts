@@ -1,20 +1,5 @@
+import { Order, Trade } from "@/types";
 import PriorityQueue from "./PriorityQueue";
-
-type Order = {
-	id: string;
-	side: "buy" | "sell";
-	price: number;
-	amount: number;
-	timestamp: number;
-};
-
-type Trade = {
-	buyOrderId: string;
-	sellOrderId: string;
-	price: number;
-	amount: number;
-	timestamp: number;
-};
 
 export default class MatchingEngine {
 	private buyOrders: PriorityQueue<Order>;
@@ -42,7 +27,9 @@ export default class MatchingEngine {
 
 		if (order.side === "buy") {
 			this.matchBuyOrder(order);
-		}
+		} else if (order.side === "sell") {
+            this.matchSellOrder(order);
+        }
 	}
 
 	matchBuyOrder(buyOrder: Order) {
@@ -54,12 +41,7 @@ export default class MatchingEngine {
 				break;
 			}
 
-			const matchedSell = this.sellOrders.poll();
-
-			// if there are no sell orders, no match possible
-			if (!matchedSell) {
-				break;
-			}
+			const matchedSell = this.sellOrders.poll()!;
 			const matchAmount = Math.min(buyOrder.amount, matchedSell.amount);
 
 			// Create trade at sell order price (price/time priority)
@@ -88,5 +70,44 @@ export default class MatchingEngine {
             this.buyOrders.add(buyOrder);
         }
 	}
+
+    matchSellOrder(sellOrder: Order) {
+        while (!this.buyOrders.isEmpty() && sellOrder.amount > 0) {
+            const bestBuy = this.buyOrders.peek();
+
+            // if the sell price is higher than buy price, no match possible
+            if (sellOrder.price > bestBuy.price) {
+                break;
+            }
+
+            const matchedBuy = this.buyOrders.poll()!;
+            const matchAmount = Math.min(sellOrder.amount, matchedBuy.amount)
+
+            // Create trade at buy order price (price/time priority)
+            const trade = {
+                buyOrderId: matchedBuy.id,
+                sellOrderId: sellOrder.id,
+                price: matchedBuy.price,
+                amount: matchAmount,
+                timestamp: Date.now()
+            };
+
+            this.trades.push(trade);
+
+            //update order amounts
+            sellOrder.amount -= matchAmount;
+            matchedBuy.amount -= matchAmount;
+
+            // if buy order still has amount remaining, add it back to queue
+            if (matchedBuy.amount > 0) {
+                this.buyOrders.add(matchedBuy)
+            }
+        }
+
+        // if sell order still has amount remaining, add to queue
+        if (sellOrder.amount > 0) {
+            this.sellOrders.add(sellOrder)
+        }
+    }
 
 }
