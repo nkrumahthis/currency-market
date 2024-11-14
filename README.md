@@ -13,7 +13,7 @@ This is a matching engine that:
 4. Includes risk management and compliance
 5. Provides a real-time UI
 
-Built with [Next.js](https://nextjs.org) 
+Built with [Next.js](https://nextjs.org).
 
 ## Goals
 
@@ -24,7 +24,13 @@ Built with [Next.js](https://nextjs.org)
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies
+
+```bash
+npm run test
+```
+
+Then run the development server:
 
 ```bash
 npm run dev
@@ -37,3 +43,9 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+To test,
+
+```bash
+npm run test
+```
