@@ -1,79 +1,194 @@
 import { ITradeRepository } from "@/repositories/ITradeRepository";
-import { Trade } from "@/types";
+import { IMessageConsumer, IMessageProducer, Trade } from "@/types";
 
 export default class TradeExecutionService {
-    private repository: ITradeRepository;
+	private repository: ITradeRepository;
+	private messageProducer: IMessageProducer;
+	private messageConsumer: IMessageConsumer;
 
-    constructor(repository: ITradeRepository) {
-        this.repository = repository;
-    }
+	constructor(
+		repository: ITradeRepository,
+		messageProducer: IMessageProducer,
+		messageConsumer: IMessageConsumer
+	) {
+		this.repository = repository;
+		this.messageProducer = messageProducer;
+		this.messageConsumer = messageConsumer;
+	}
 
-    async executeTrade(trade: Trade) {
-        const tradeId = await this.generateTradeId();
+	async start(): Promise<void> {
+		await this.messageProducer.connect();
+		await this.messageConsumer.connect();
+		await this.messageConsumer.onMessage(
+			async (messageCommand: {
+				topic: string;
+				partition: string;
+				message: any;
+			}) => {
+				const { topic, partition, message } = messageCommand;
+				const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
+				console.log(`- ${prefix} ${message.key}#${message.value}`);
 
-        try {
-            await this.repository.connect();
-            await this.repository.startTransaction();
-            
-            try {
-                await this.checkAndReserveBalances(trade);
-                await this.repository.recordTrade(trade, tradeId);
-                await this.updateBalances(trade);
-                await this.repository.commitTransaction();
-                
-                await this.publishTradeEvent(trade, tradeId, "EXECUTED");
-                await this.initiateSettlement(trade, tradeId);
-            } catch (err: any) {
-                await this.repository.rollbackTransaction();
-                throw err;
-            } finally {
-                await this.repository.disconnect();
-            }
-        } catch (err: any) {
-            throw new Error(`Trade execution failed: ${err.message}`);
-        }
-    }
+				try {
+					const command = JSON.parse(message.value!.toString());
+					await this.handleTradeCommand(command);
+				} catch (error) {
+					console.error("Error processing trade command:", error);
+				}
+			}
+		);
+	}
 
-    private async checkAndReserveBalances(trade: Trade) {
-        const [sellerBalance, buyerBalance] = await Promise.all([
-            this.repository.getAccountBalance(trade.sellOrderId, trade.sellCurrency),
-            this.repository.getAccountBalance(trade.buyOrderId, trade.buyCurrency)
-        ]);
+	async stop(): Promise<void> {
+		await this.messageProducer.disconnect();
+		await this.messageConsumer.disconnect();
+	}
 
-        if (sellerBalance < trade.amount) {
-            throw new Error("Insufficient seller balance");
-        }
+	async executeTrade(trade: Trade) {
+		const tradeId = await this.generateTradeId();
 
-        if (buyerBalance < trade.amount) {
-            throw new Error("Insufficient buyer balance");
-        }
+		try {
+			await this.repository.connect();
+			await this.repository.startTransaction();
 
-        await Promise.all([
-            this.repository.reserveAmount(trade.sellerId, trade.sellCurrency, trade.amount),
-            this.repository.reserveAmount(trade.buyerId, trade.buyCurrency, trade.amount)
-        ]);
-    }
+			try {
+				await this.checkAndReserveBalances(trade);
+				await this.repository.recordTrade(trade, tradeId);
+				await this.updateBalances(trade);
+				await this.repository.commitTransaction();
 
-    private async updateBalances(trade: Trade) {
-        await Promise.all([
-            this.repository.updateBalance(trade.sellerId, trade.sellCurrency, trade.amount, 'decrease'),
-            this.repository.updateBalance(trade.buyerId, trade.buyCurrency, trade.amount, 'decrease'),
-            this.repository.updateBalance(trade.sellerId, trade.buyCurrency, trade.amount, 'increase'),
-            this.repository.updateBalance(trade.buyerId, trade.sellCurrency, trade.amount, 'increase')
-        ]);
-    }
+				await this.publishTradeEvent(trade, tradeId, "EXECUTED");
+				await this.initiateSettlement(trade, tradeId);
+			} catch (err: any) {
+				await this.repository.rollbackTransaction();
+				throw err;
+			} finally {
+				await this.repository.disconnect();
+			}
+		} catch (err: any) {
+			await this.publishTradeEvent(trade, tradeId, "FAILED");
+			throw new Error(`Trade execution failed: ${err.message}`);
+		}
+	}
 
-    private async generateTradeId(): Promise<string> {
-        const timestamp = Date.now().toString(36);
-        const random = Math.random().toString(36).substring(2, 5);
-        return `T-${timestamp}-${random}`;
-    }
+	private async cancelTrade(trade: Trade) {
+		await this.repository.connect();
+		await this.repository.startTransaction();
 
-    private async publishTradeEvent(trade: Trade, tradeId: string, eventId: string): Promise<void> {
-        console.log('Trade executed:', { trade, tradeId, eventId });
-    }
+		try {
+			await this.publishTradeEvent(trade, trade.buyOrderId, "CANCELLED");
+		} catch (err: any) {
+			await this.repository.rollbackTransaction();
+			throw err;
+		} finally {
+			await this.repository.disconnect();
+		}
+	}
 
-    private async initiateSettlement(trade: Trade, tradeId: string): Promise<void> {
-        console.log('Initiating settlement:', { trade, tradeId });
-    }
+	private async checkAndReserveBalances(trade: Trade) {
+		const [sellerBalance, buyerBalance] = await Promise.all([
+			this.repository.getAccountBalance(trade.sellOrderId, trade.sellCurrency),
+			this.repository.getAccountBalance(trade.buyOrderId, trade.buyCurrency),
+		]);
+
+		if (sellerBalance < trade.amount) {
+			throw new Error("Insufficient seller balance");
+		}
+
+		if (buyerBalance < trade.amount) {
+			throw new Error("Insufficient buyer balance");
+		}
+
+		await Promise.all([
+			this.repository.reserveAmount(
+				trade.sellerId,
+				trade.sellCurrency,
+				trade.amount
+			),
+			this.repository.reserveAmount(
+				trade.buyerId,
+				trade.buyCurrency,
+				trade.amount
+			),
+		]);
+	}
+
+	private async updateBalances(trade: Trade) {
+		await Promise.all([
+			this.repository.updateBalance(
+				trade.sellerId,
+				trade.sellCurrency,
+				trade.amount,
+				"decrease"
+			),
+			this.repository.updateBalance(
+				trade.buyerId,
+				trade.buyCurrency,
+				trade.amount,
+				"decrease"
+			),
+			this.repository.updateBalance(
+				trade.sellerId,
+				trade.buyCurrency,
+				trade.amount,
+				"increase"
+			),
+			this.repository.updateBalance(
+				trade.buyerId,
+				trade.sellCurrency,
+				trade.amount,
+				"increase"
+			),
+		]);
+	}
+
+	private async generateTradeId(): Promise<string> {
+		const timestamp = Date.now().toString(36);
+		const random = Math.random().toString(36).substring(2, 5);
+		return `T-${timestamp}-${random}`;
+	}
+
+	async publishTradeEvent(
+		trade: Trade,
+		tradeId: string,
+		status: string,
+		errorMessage: string | null = null
+	): Promise<void> {
+		const tradeMessage = {
+			tradeId,
+			status,
+			errorMessage,
+			trade,
+			timestamp: Date.now(),
+		};
+
+		await this.messageProducer.send(
+			"trades",
+			tradeId,
+			JSON.stringify(tradeMessage)
+		);
+	}
+
+	private async initiateSettlement(
+		trade: Trade,
+		tradeId: string
+	): Promise<void> {
+		console.log("Initiating settlement:", { trade, tradeId });
+	}
+
+	private async handleTradeCommand(command: {
+		type: string;
+		trade: Trade;
+	}): Promise<void> {
+		switch (command.type) {
+			case "EXECUTE_TRADE":
+				await this.executeTrade(command.trade);
+				break;
+			case "CANCEL_TRADE":
+				await this.cancelTrade(command.trade);
+				break;
+			default:
+				console.warn(`Unknown command type: ${command.type}`);
+		}
+	}
 }
