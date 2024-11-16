@@ -27,7 +27,13 @@ Built with [Next.js](https://nextjs.org).
 First, install dependencies
 
 ```bash
-npm run test
+npm install
+```
+
+Run the backend server
+
+```bash
+npx tsx src/server/web.ts
 ```
 
 Then run the development server:

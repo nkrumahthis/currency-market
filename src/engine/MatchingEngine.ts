@@ -1,4 +1,4 @@
-import { Order, Trade } from "@/types";
+import { NewOrderRequest, Order, Trade } from "@/types";
 import PriorityQueue from "./PriorityQueue";
 import OrderBook from "./OrderBook";
 
@@ -26,10 +26,21 @@ export default class MatchingEngine {
 		return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
 	}
 
-	submitOrder(order: Order): Order {
-		order.timestamp = Date.now();
-		order.id = this.generateOrderId();
+    /**
+     * Creates a new order by extending the provided order data with a timestamp and unique ID.
+     * 
+     * @param newOrderRequest - The base new order request data to be extended.
+     * @returns A new Order object with added timestamp and ID.
+     */
+    createOrder(newOrderRequest: NewOrderRequest): Order {
+        return {
+            ...newOrderRequest,
+            timestamp: Date.now(),
+            id: this.generateOrderId()
+        } as Order
+    }
 
+	submitOrder(order: Order): Order {
 		if (order.side === "buy") {
 			this.matchBuyOrder(order);
 		} else if (order.side === "sell") {

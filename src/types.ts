@@ -8,6 +8,14 @@ export type Order = {
     currency: string;
 };
 
+export type NewOrderRequest = {
+    side: "buy" | "sell";
+	price: number;
+	amount: number;
+    currency: string;
+    userId?: string;
+}
+
 export type Trade = {
     buyerId: string;
 	buyOrderId: string;
