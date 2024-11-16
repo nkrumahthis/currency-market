@@ -33,7 +33,7 @@ npm install
 Run the backend server
 
 ```bash
-npx tsx src/server/web.ts
+npm run backend
 ```
 
 Then run the development server:

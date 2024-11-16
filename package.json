@@ -1,43 +1,45 @@
 {
-  "name": "currency-market",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "test:watch": "jest --watch"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "kafkajs": "^2.2.4",
-    "next": "15.0.3",
-    "pg": "^8.13.1",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
-  },
-  "devDependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
-    "@types/express": "^5.0.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20",
-    "@types/pg": "^8.11.10",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@types/ws": "^8.5.13",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.3",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5"
-  }
+	"name": "currency-market",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbopack",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"backend": "tsx src/backend/web.ts",
+		"backend:watch": "tsx watch src/backend/web.ts"
+	},
+	"dependencies": {
+		"dotenv": "^16.4.5",
+		"express": "^4.21.1",
+		"kafkajs": "^2.2.4",
+		"next": "15.0.3",
+		"pg": "^8.13.1",
+		"react": "19.0.0-rc-66855b96-20241106",
+		"react-dom": "19.0.0-rc-66855b96-20241106"
+	},
+	"devDependencies": {
+		"@testing-library/dom": "^10.4.0",
+		"@testing-library/jest-dom": "^6.6.3",
+		"@testing-library/react": "^16.0.1",
+		"@types/express": "^5.0.0",
+		"@types/jest": "^29.5.14",
+		"@types/node": "^20",
+		"@types/pg": "^8.11.10",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"@types/ws": "^8.5.13",
+		"eslint": "^8",
+		"eslint-config-next": "15.0.3",
+		"jest": "^29.7.0",
+		"jest-environment-jsdom": "^29.7.0",
+		"postcss": "^8",
+		"tailwindcss": "^3.4.1",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.19.2",
+		"typescript": "^5"
+	}
 }
