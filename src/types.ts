@@ -20,6 +20,16 @@ export type Trade = {
 	timestamp: number;
 };
 
+export type OrderBookFull = {
+    asks: Map <number, number[]>; 
+    bids: Map <number, number[]>; 
+}
+
+export type OrderBookSummary = {
+    asks: Map <number, number>; 
+    bids: Map <number, number>; 
+}
+
 export interface IMessageProducer {
     connect(): Promise<void>;
     disconnect(): Promise<void>;

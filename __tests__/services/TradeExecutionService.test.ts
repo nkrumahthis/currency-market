@@ -136,8 +136,6 @@ describe('TradeExecutionService', () => {
             );
         });
 
-        // ... existing balance validation tests ...
-
         it('should check and reserve balances in parallel', async () => {
             const getBalanceSpy = jest.spyOn(mockRepository, 'getAccountBalance');
             const reserveAmountSpy = jest.spyOn(mockRepository, 'reserveAmount');
@@ -252,10 +250,6 @@ describe('TradeExecutionService', () => {
             );
             consoleSpy.mockRestore();
         });
-    });
-
-    describe('generateTradeId', () => {
-        // ... existing trade ID generation tests ...
     });
 
     describe('Error Handling', () => {

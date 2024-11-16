@@ -1,11 +1,12 @@
 import { Order, Trade } from "@/types";
 import PriorityQueue from "./PriorityQueue";
+import OrderBook from "./OrderBook";
 
 export default class MatchingEngine {
 	private buyOrders: PriorityQueue<Order>;
 	private sellOrders: PriorityQueue<Order>;
 	private trades: Array<Trade>;
-	private orderBook;
+	private orderBook: OrderBook;
 
 	constructor() {
 		this.buyOrders = new PriorityQueue(
@@ -17,10 +18,7 @@ export default class MatchingEngine {
 		); // Lower price has priority
 
 		this.trades = [];
-		this.orderBook = {
-			bids: new Map(),
-			asks: new Map(),
-		};
+		this.orderBook = new OrderBook(this.sellOrders, this.buyOrders);
 	}
 
 	generateOrderId() {
@@ -37,8 +35,8 @@ export default class MatchingEngine {
 		} else if (order.side === "sell") {
 			this.matchSellOrder(order);
 		}
+        this.orderBook.updateWithOrder(order)
 
-		this.updateOrderBook();
 		return order;
 	}
 
@@ -64,7 +62,7 @@ export default class MatchingEngine {
 				amount: matchAmount,
 				timestamp: Date.now(),
 				sellCurrency: matchedSell.currency,
-                buyCurrency: buyOrder.currency,
+				buyCurrency: buyOrder.currency,
 			};
 
 			this.trades.push(trade);
@@ -105,7 +103,7 @@ export default class MatchingEngine {
 				amount: matchAmount,
 				timestamp: Date.now(),
 				sellCurrency: sellOrder.currency,
-                buyCurrency: matchedBuy.currency,
+				buyCurrency: matchedBuy.currency,
 				buyerId: matchedBuy.userId,
 				sellerId: sellOrder.userId,
 			};
@@ -128,23 +126,6 @@ export default class MatchingEngine {
 		}
 	}
 
-	updateOrderBook() {
-		this.orderBook.bids.clear();
-		this.orderBook.asks.clear();
-
-		// Group orders by price
-		for (const order of this.buyOrders.values()) {
-			const existingAmount = this.orderBook.bids.get(order.price) || 0;
-			this.orderBook.bids.set(order.price, existingAmount + order.amount);
-		}
-
-		// Group sell orders by price
-		for (const order of this.sellOrders.values()) {
-			const existingAmount = this.orderBook.asks.get(order.price) || 0;
-			this.orderBook.asks.set(order.price, existingAmount + order.amount);
-		}
-	}
-
 	getMarketPrice() {
 		if (this.buyOrders.isEmpty() || this.sellOrders.isEmpty()) {
 			return null;
@@ -156,21 +137,11 @@ export default class MatchingEngine {
 		return (bestBid + bestAsk) / 2;
 	}
 
-	// Get order book snapshot
-	getOrderBook(depth = 10) {
-		return {
-			bids: Array.from(this.orderBook.bids.entries())
-				.sort((a, b) => b[0] - a[0])
-				.slice(0, depth)
-				.map(([price, amount]) => ({ price, amount })),
-			asks: Array.from(this.orderBook.asks.entries())
-				.sort((a, b) => a[0] - b[0])
-				.slice(0, depth)
-				.map(([price, amount]) => ({ price, amount })),
-		};
-	}
-
 	getRecentTrades(limit = 50) {
 		return this.trades.slice(-limit);
 	}
+
+    getOrderBook(depth=10) {
+        return this.orderBook.getSummary(depth);
+    }
 }
