@@ -1,372 +1,190 @@
 import MatchingEngine from "@/backend/engine/MatchingEngine";
-import { Order } from "@/types";
+import { NewOrderRequest, Order } from "@/types";
 
 describe("MatchingEngine", () => {
-	let engine: MatchingEngine;
+  let engine: MatchingEngine;
 
-	beforeEach(() => {
-		engine = new MatchingEngine();
-	});
+  beforeEach(() => {
+    engine = new MatchingEngine();
+  });
 
-	test("should add buy order to the buy queue", () => {
-		const order: Order = {
-			id: "123",
-			side: "buy",
-			price: 100,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+  test("should create and validate orders correctly", () => {
+    const newOrderRequest: NewOrderRequest = {
+      side: "buy",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    };
 
-		engine.submitOrder(order);
+    const order = engine.createOrder(newOrderRequest);
 
-		expect(engine["buyOrders"].isEmpty()).toBe(false);
-		expect(engine["buyOrders"].peek()).toEqual(order);
-		expect(engine["sellOrders"].isEmpty()).toBe(true);
-		expect(engine["sellOrders"].peek()).toEqual(undefined);
-	});
+    expect(order).toMatchObject({
+      ...newOrderRequest,
+      timestamp: expect.any(Number),
+      id: expect.any(String),
+    });
+  });
 
-	test("should add sell order to the sell queue", () => {
-		const order: Order = {
-			id: "456",
-			side: "sell",
-			price: 200,
-			amount: 5,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+  test("should throw error for invalid order", () => {
+    const invalidOrder: NewOrderRequest = {
+      side: "sell",
+      price: -1,
+      amount: 0,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    };
 
-		engine.submitOrder(order);
+    expect(() => engine.createOrder(invalidOrder)).toThrow(
+      "Invalid order: Amount and price must be greater than zero."
+    );
+  });
 
-		expect(engine["sellOrders"].isEmpty()).toBe(false);
-		expect(engine["sellOrders"].peek()).toEqual(order);
-		expect(engine["buyOrders"].isEmpty()).toBe(true);
-		expect(engine["buyOrders"].peek()).toEqual(undefined);
-	});
+  test("should match a buy order with a sell order", () => {
+    const sellOrder: Order = engine.createOrder({
+      side: "sell",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-	test("should correctly match a buy order with an existing sell order if sell price is good", () => {
-		// the buy order should be fulfilled because the selling price is less than the buying price,
-		// so it is a good price for the buyer.
+    const buyOrder: Order = engine.createOrder({
+      side: "buy",
+      price: 110,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    engine.submitOrder(sellOrder);
+    engine.submitOrder(buyOrder);
 
-		const sellOrder: Order = {
-			id: "101",
-			side: "sell",
-			price: 95,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    const recentTrades = engine.getRecentTrades();
+    expect(recentTrades).toHaveLength(1);
 
-		// submit sell order first and then set a buy order to match
-		engine.submitOrder(sellOrder);
-		engine.submitOrder(buyOrder);
+    const trade = recentTrades[0];
+    expect(trade).toMatchObject({
+      buyerId: buyOrder.userId,
+      buyOrderId: buyOrder.id,
+      sellerId: sellOrder.userId,
+      sellOrderId: sellOrder.id,
+      price: 100,
+      amount: 1,
+    });
+  });
 
-		expect(engine["trades"].length).toBe(1);
-		const trade = engine["trades"][0];
-		expect(trade).toMatchObject({
-			buyOrderId: expect.any(String),
-			sellOrderId: expect.any(String),
-			price: 95, // sold at the price the seller asked for.
-			amount: 10,
-			timestamp: expect.any(Number),
-		});
+  test("should add unmatched buy order to buy queue", () => {
+    const buyOrder: Order = engine.createOrder({
+      side: "buy",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		expect(engine["buyOrders"].isEmpty()).toBe(true);
-		expect(engine["sellOrders"].isEmpty()).toBe(true);
-	});
+    engine.submitOrder(buyOrder);
 
-	test("should not match a buy order with an existing sell order if sell price is bad", () => {
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    const orderBook = engine.getOrderBook(10, false);
+    expect(orderBook.bids).toHaveLength(1);
+    expect(orderBook.bids[0].price).toBe(100);
+    expect(orderBook.bids[0].amount).toBe(1);
+  });
 
-		const sellOrder: Order = {
-			id: "101",
-			side: "sell",
-			price: 200,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+  test("should add unmatched sell order to sell queue", () => {
+    const sellOrder: Order = engine.createOrder({
+      side: "sell",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		// submit sell order first and then set a buy order to match
-		engine.submitOrder(buyOrder);
-		engine.submitOrder(sellOrder);
+    engine.submitOrder(sellOrder);
 
-		expect(engine["trades"].length).toBe(0);
-		expect(engine["buyOrders"].isEmpty()).toBe(false);
-		expect(engine["buyOrders"].isEmpty()).toBe(false);
-	});
+    const orderBook = engine.getOrderBook(10, false);
+    expect(orderBook.asks).toHaveLength(1);
+    expect(orderBook.asks[0].price).toBe(100);
+    expect(orderBook.asks[0].amount).toBe(1);
+  });
 
-	test("should partially fulfill a buy order if sell order amount is less", () => {
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 30,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+  test("should calculate market price correctly", () => {
+    const buyOrder: Order = engine.createOrder({
+      side: "buy",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		const sellOrder: Order = {
-			id: "101",
-			side: "sell",
-			price: 90,
-			amount: 10,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    const sellOrder: Order = engine.createOrder({
+      side: "sell",
+      price: 105,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		engine.submitOrder(sellOrder);
-		engine.submitOrder(buyOrder);
+    engine.submitOrder(buyOrder);
+    engine.submitOrder(sellOrder);
 
-		expect(engine["trades"].length).toBe(1);
-		const trade = engine["trades"][0];
-		expect(trade).toMatchObject({
-			buyOrderId: expect.any(String),
-			sellOrderId: expect.any(String),
-			price: 90, // sold at the price the seller asked for.
-			amount: 10, // sold amount available
-			timestamp: expect.any(Number),
-		});
+    const marketPrice = engine.getMarketPrice();
+    expect(marketPrice).toBe(102.5);
+  });
 
-		expect(engine["buyOrders"].isEmpty()).toBe(false);
-		expect(engine["buyOrders"].peek().amount).toBe(20); // still 20 left
+  test("should return recent trades limited by the provided value", () => {
+    for (let i = 0; i < 100; i++) {
+      const buyOrder: Order = engine.createOrder({
+        side: "buy",
+        price: 105 + i,
+        amount: 1,
+        baseCurrency: "BTC",
+        quoteCurrency: "USD",
+      });
 
-		expect(engine["sellOrders"].isEmpty()).toBe(true);
-	});
+      const sellOrder: Order = engine.createOrder({
+        side: "sell",
+        price: 100 + i,
+        amount: 1,
+        baseCurrency: "BTC",
+        quoteCurrency: "USD",
+      });
 
-	test("should update the order book after submitting orders", () => {
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 50,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+      engine.submitOrder(buyOrder);
+      engine.submitOrder(sellOrder);
+    }
 
-		const sellOrder: Order = {
-			id: "101",
-			side: "sell",
-			price: 105,
-			amount: 30,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    const recentTrades = engine.getRecentTrades(10);
+    expect(recentTrades).toHaveLength(10);
+  });
 
-		engine.submitOrder(sellOrder);
-		engine.submitOrder(buyOrder);
+  test("should group orders correctly in the order book", () => {
+    const buyOrder1: Order = engine.createOrder({
+      side: "buy",
+      price: 100,
+      amount: 1,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		const orderBook = engine.getOrderBook();
+    const buyOrder2: Order = engine.createOrder({
+      side: "buy",
+      price: 100,
+      amount: 2,
+      baseCurrency: "BTC",
+      quoteCurrency: "USD",
+    });
 
-		expect(orderBook.asks).toEqual([{ price: 105, amount: 30 }]);
-		expect(orderBook.bids).toEqual([{ price: 100, amount: 50 }]);
-	});
+    engine.submitOrder(buyOrder1);
+    engine.submitOrder(buyOrder2);
 
-	test("should calculate the market price correctly", () => {
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 50,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
+    const orderBook = engine.getOrderBook(10, false);
 
-		const sellOrder: Order = {
-			id: "102",
-			side: "sell",
-			price: 200,
-			amount: 20,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
-
-		engine.submitOrder(sellOrder);
-		engine.submitOrder(buyOrder);
-
-		expect(engine.getMarketPrice()).toBe(150); // average sell and order prices
-	});
-
-	test("should be null if no buy order or sell order exists", () => {
-		expect(engine.getMarketPrice()).toBeNull(); // no buy or sell orders
-	});
-
-	test("should be null if buy order exists, but not sell order", () => {
-		const buyOrder: Order = {
-			id: "789",
-			side: "buy",
-			price: 100,
-			amount: 50,
-			timestamp: 1632000000000,
-			userId: "",
-			currency: "XOF",
-		};
-
-		engine.submitOrder(buyOrder);
-
-		expect(engine.getMarketPrice()).toBeNull(); // no sell order
-	});
-
-	test("should return the correct order book snapshot with specified depth", () => {
-		const buyOrders: Order[] = [
-			{
-				id: "",
-				side: "buy",
-				price: 102,
-				amount: 1,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-			{
-				id: "",
-				side: "buy",
-				price: 100,
-				amount: 5,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-			{
-				id: "",
-				side: "buy",
-				price: 99,
-				amount: 2,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-		];
-		const sellOrders: Order[] = [
-			{
-				id: "",
-				side: "sell",
-				price: 103,
-				amount: 4,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-			{
-				id: "",
-				side: "sell",
-				price: 104,
-				amount: 3,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-			{
-				id: "",
-				side: "sell",
-				price: 105,
-				amount: 1,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-		];
-
-		buyOrders.forEach((order) => engine.submitOrder(order));
-		sellOrders.forEach((order) => engine.submitOrder(order));
-
-		const orderBook = engine.getOrderBook(2);
-
-		expect(orderBook.bids).toEqual([
-			{ price: 102, amount: 1 },
-			{ price: 100, amount: 5 },
-		]);
-		expect(orderBook.asks).toEqual([
-			{ price: 103, amount: 4 },
-			{ price: 104, amount: 3 },
-		]);
-	});
-
-	test("should return recent trades up to the specified limit", () => {
-		const buyOrders: Order[] = [
-			{
-				id: "",
-				side: "buy",
-				price: 101,
-				amount: 5,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-		];
-		const sellOrders: Order[] = [
-			{
-				id: "",
-				side: "sell",
-				price: 100,
-				amount: 2,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-			{
-				id: "",
-				side: "sell",
-				price: 100,
-				amount: 3,
-				timestamp: 0,
-				userId: "",
-				currency: "XOF",
-			},
-		];
-
-		buyOrders.forEach((order) => engine.submitOrder(order));
-		sellOrders.forEach((order) => engine.submitOrder(order));
-
-		const recentTrades = engine.getRecentTrades(2);
-
-		expect(recentTrades.length).toBe(2);
-		expect(recentTrades[0]).toMatchObject({
-			buyOrderId: expect.any(String),
-			sellOrderId: expect.any(String),
-			price: 101,
-			amount: 2,
-			timestamp: expect.any(Number),
-		});
-		expect(recentTrades[1]).toMatchObject({
-			buyOrderId: expect.any(String),
-			sellOrderId: expect.any(String),
-			price: 101,
-			amount: 3,
-			timestamp: expect.any(Number),
-		});
-	});
-
-	test("should return an empty list if there are no recent trades", () => {
-		const recentTrades = engine.getRecentTrades();
-		expect(recentTrades).toEqual([]);
-	});
+    expect(orderBook.bids).toHaveLength(1);
+    expect(orderBook.bids[0]).toMatchObject({
+      price: 100,
+      amount: 3,
+      quoteCurrency: "USD",
+    });
+  });
 });

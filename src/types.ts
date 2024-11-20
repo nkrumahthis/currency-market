@@ -59,15 +59,11 @@ export type Trade = {
 	timestamp: number;
 };
 
-export type OrderBookFull = {
-	asks: { price: number; amounts: number[]; quoteCurrency: string }[];
-	bids: { price: number; amounts: number[]; quoteCurrency: string }[];
-};
-
-export type OrderBookSummary = {
-	asks: { price: number; amount: number; quoteCurrency: string }[];
-	bids: { price: number; amount: number; quoteCurrency: string }[];
-};
+export type OrderBook = {
+	bids: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
+	asks: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
+	
+}
 
 export interface IMessageProducer {
 	connect(): Promise<void>;
