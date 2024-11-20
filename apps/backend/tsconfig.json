@@ -4,8 +4,10 @@
 		"paths": {
 			"@/*": ["./src/*"]
 		},
-		"outDir": "./dist",
-    "esModuleInterop": true
+		"esModuleInterop": true,
+		"outDir": "dist",
+        "rootDir": ".",
+        "skipLibCheck": true
 	},
 	"exclude": ["node_modules"],
 	"include": ["."]
