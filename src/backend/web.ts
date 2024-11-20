@@ -39,7 +39,7 @@ router.get("/market-price", (_req, res) => {
 })
 
 router.get("/order-book", (_req, res) => {
-    const orderBook = matchingEngine.getOrderBookSummary();
+    const orderBook = matchingEngine.getOrderBook(100, true);
     res.json({data: orderBook})
 })
 

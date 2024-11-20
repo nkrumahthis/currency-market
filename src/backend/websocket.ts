@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import MatchingEngine from "@/backend/engine/MatchingEngine";
-import { Order, OrderBookFull, Trade } from "@/types";
+import { Order, OrderBook, Trade } from "@/types";
 
 type Client = {
   id: string;
@@ -18,7 +18,7 @@ type OrderResult = {
 };
 
 type OrderBookUpdate = {
-  orderBook: OrderBookFull;
+  orderBook: OrderBook;
   marketPrice: number;
 };
 
@@ -33,7 +33,7 @@ type MessagePacket = {
   payload:
     | Order
     | Trade
-    | OrderBookFull
+    | OrderBook
     | OrderResult
     | OrderBookUpdate
     | ErrorPayload;
