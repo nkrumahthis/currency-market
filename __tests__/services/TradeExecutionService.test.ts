@@ -1,6 +1,6 @@
-import { ITradeRepository } from "@/repositories/ITradeRepository";
+import { ITradeRepository } from "@/backend/repositories/ITradeRepository";
 import { IMessageConsumer, IMessageProducer } from "@/types";
-import TradeExecutionService from "@/services/TradeExecutionService";
+import TradeExecutionService from "@/backend/services/TradeExecutionService";
 import { Trade } from "@/types";
 
 const mockTrade: Trade = {
@@ -8,8 +8,8 @@ const mockTrade: Trade = {
     buyerId: "buyer456",
     sellOrderId: "order789",
     buyOrderId: "order101",
-    sellCurrency: "USD",
-    buyCurrency: "EUR",
+    baseCurrency: "USD",
+    quoteCurrency: "EUR",
     amount: 1000,
     timestamp: 0,
     price: 1
