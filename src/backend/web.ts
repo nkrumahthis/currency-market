@@ -1,4 +1,4 @@
-import MatchingEngine from "@/engine/MatchingEngine"
+import MatchingEngine from "@/backend/engine/MatchingEngine"
 import express from "express"
 import dotenv from "dotenv"
 import { NewOrderRequest } from "@/types"
@@ -28,6 +28,7 @@ router.post("/orders", (req, res) => {
     const newOrderRequest = req.body as NewOrderRequest
     const order = matchingEngine.createOrder(newOrderRequest)
     // submit order to matching engine
+    console.log(order)
     const submittedOrder = matchingEngine.submitOrder(order)
     res.json({data: submittedOrder})
 })
@@ -38,8 +39,16 @@ router.get("/market-price", (_req, res) => {
 })
 
 router.get("/order-book", (_req, res) => {
-    const orderBook = matchingEngine.getOrderBook(10);
+    const orderBook = matchingEngine.getOrderBookSummary();
     res.json({data: orderBook})
+})
+
+router.get("/order-book/summary", (_req, res) => {
+    res.json({data: "fuck"})
+})
+
+router.get("/order-book/detailed", (_req, res) => {
+    res.json({data: "fuck but with details"})
 })
 
 router.get("/")

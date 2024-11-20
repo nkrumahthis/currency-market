@@ -1,4 +1,4 @@
-import { ITradeRepository } from "@/repositories/ITradeRepository";
+import { ITradeRepository } from "@/backend/repositories/ITradeRepository";
 import { IMessageConsumer, IMessageProducer, Trade } from "@/types";
 
 export default class TradeExecutionService {
@@ -87,8 +87,8 @@ export default class TradeExecutionService {
 
 	private async checkAndReserveBalances(trade: Trade) {
 		const [sellerBalance, buyerBalance] = await Promise.all([
-			this.repository.getAccountBalance(trade.sellOrderId, trade.sellCurrency),
-			this.repository.getAccountBalance(trade.buyOrderId, trade.buyCurrency),
+			this.repository.getAccountBalance(trade.sellOrderId, trade.quoteCurrency),
+			this.repository.getAccountBalance(trade.buyOrderId, trade.baseCurrency),
 		]);
 
 		if (sellerBalance < trade.amount) {
@@ -102,12 +102,12 @@ export default class TradeExecutionService {
 		await Promise.all([
 			this.repository.reserveAmount(
 				trade.sellerId,
-				trade.sellCurrency,
+				trade.quoteCurrency,
 				trade.amount
 			),
 			this.repository.reserveAmount(
 				trade.buyerId,
-				trade.buyCurrency,
+				trade.baseCurrency,
 				trade.amount
 			),
 		]);
@@ -117,25 +117,25 @@ export default class TradeExecutionService {
 		await Promise.all([
 			this.repository.updateBalance(
 				trade.sellerId,
-				trade.sellCurrency,
+				trade.quoteCurrency,
 				trade.amount,
 				"decrease"
 			),
 			this.repository.updateBalance(
 				trade.buyerId,
-				trade.buyCurrency,
+				trade.baseCurrency,
 				trade.amount,
 				"decrease"
 			),
 			this.repository.updateBalance(
 				trade.sellerId,
-				trade.buyCurrency,
+				trade.quoteCurrency,
 				trade.amount,
 				"increase"
 			),
 			this.repository.updateBalance(
 				trade.buyerId,
-				trade.sellCurrency,
+				trade.baseCurrency,
 				trade.amount,
 				"increase"
 			),
