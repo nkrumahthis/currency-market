@@ -1,12 +1,9 @@
 -- init.sql
 -- Database schema initialization for Capi Money platform
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Users table
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(50),
     password_hash VARCHAR(255) NOT NULL,
@@ -19,7 +16,7 @@ CREATE TABLE users (
 
 -- KYC status table
 CREATE TABLE kyc_status (
-    user_id UUID PRIMARY KEY REFERENCES users(id),
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id),
     status VARCHAR(50) NOT NULL,
     level VARCHAR(50) NOT NULL,
     last_verified TIMESTAMP WITH TIME ZONE,
@@ -30,8 +27,8 @@ CREATE TABLE kyc_status (
 
 -- Account balances table
 CREATE TABLE account_balances (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    user_id VARCHAR(255) REFERENCES users(id),
     currency VARCHAR(10) NOT NULL,
     amount DECIMAL(20,8) NOT NULL DEFAULT 0,
     reserved DECIMAL(20,8) NOT NULL DEFAULT 0,
@@ -42,11 +39,12 @@ CREATE TABLE account_balances (
 
 -- Orders table
 CREATE TABLE orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    user_id VARCHAR(255) REFERENCES users(id),
     type VARCHAR(20) NOT NULL,
-    side VARCHAR(10) NOT NULL,
-    currency_pair VARCHAR(20) NOT NULL,
+    side VARCHAR(10) NOT NULL CHECK (side IN ('buy', 'sell')),
+    base_currency VARCHAR(10) NOT NULL,
+    quote_currency VARCHAR(10) NOT NULL,
     amount DECIMAL(20,8) NOT NULL,
     price DECIMAL(20,8) NOT NULL,
     filled_amount DECIMAL(20,8) DEFAULT 0,
@@ -57,11 +55,13 @@ CREATE TABLE orders (
 
 -- Trades table
 CREATE TABLE trades (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    order_id UUID REFERENCES orders(id),
-    buyer_id UUID REFERENCES users(id),
-    seller_id UUID REFERENCES users(id),
-    currency_pair VARCHAR(20) NOT NULL,
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    buy_order_id VARCHAR(255) REFERENCES orders(id),
+    sell_order_id VARCHAR(255) REFERENCES orders(id),
+    buyer_id VARCHAR(255) REFERENCES users(id),
+    seller_id VARCHAR(255) REFERENCES users(id),
+    base_currency VARCHAR(10) NOT NULL,
+    quote_currency VARCHAR(10) NOT NULL,
     amount DECIMAL(20,8) NOT NULL,
     price DECIMAL(20,8) NOT NULL,
     fee DECIMAL(20,8) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE trades (
 
 -- Risk assessments table
 CREATE TABLE risk_assessments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    trade_id UUID REFERENCES trades(id),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    trade_id VARCHAR(255) REFERENCES trades(id),
     risk_level VARCHAR(20) NOT NULL,
     checks JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -82,8 +82,8 @@ CREATE TABLE risk_assessments (
 
 -- Notifications table
 CREATE TABLE notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    user_id VARCHAR(255) REFERENCES users(id),
     type VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
@@ -94,7 +94,7 @@ CREATE TABLE notifications (
 
 -- User notification preferences
 CREATE TABLE user_notification_preferences (
-    user_id UUID PRIMARY KEY REFERENCES users(id),
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id),
     preferences JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -102,11 +102,11 @@ CREATE TABLE user_notification_preferences (
 
 -- Audit log
 CREATE TABLE audit_log (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    id VARCHAR(255) PRIMARY KEY, -- Use app-generated unique IDs
+    user_id VARCHAR(255) REFERENCES users(id),
     action VARCHAR(100) NOT NULL,
     entity_type VARCHAR(50) NOT NULL,
-    entity_id UUID NOT NULL,
+    entity_id VARCHAR(255) NOT NULL,
     changes JSONB,
     ip_address VARCHAR(45),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -127,7 +127,7 @@ BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE 'plpgsql';
 
 -- Add updated_at triggers to relevant tables
 CREATE TRIGGER update_users_updated_at
