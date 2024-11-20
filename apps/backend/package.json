@@ -1,0 +1,27 @@
+{
+	"name": "backend",
+	"private": true,
+	"scripts": {
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"dev": "tsx watch src/index.ts",
+		"build": "rm -rf ./dist && tsc",
+		"tsc": "tsc --noEmit",
+		"start": "node dist/src/index.js"
+	},
+	"dependencies": {
+		"dotenv": "^16.4.5",
+		"express": "^4.21.1",
+		"kafkajs": "^2.2.4",
+		"pg": "^8.13.1"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.0",
+		"@types/jest": "^29.5.14",
+		"@types/ws": "^8.5.13",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.2.5",
+		"@types/pg": "^8.11.10"
+
+	}
+}
