@@ -1,6 +1,6 @@
 import { Order } from "@/types";
-import OrderBook from "@/engine/OrderBook";
-import PriorityQueue from "@/engine/PriorityQueue";
+import OrderBook from "@/backend/engine/OrderBook";
+import PriorityQueue from "@/backend/engine/PriorityQueue";
 
 describe("OrderBook", () => {
 	let orderBook: OrderBook;

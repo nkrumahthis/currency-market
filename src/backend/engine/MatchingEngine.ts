@@ -26,19 +26,19 @@ export default class MatchingEngine {
 		return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
 	}
 
-    /**
-     * Creates a new order by extending the provided order data with a timestamp and unique ID.
-     * 
-     * @param newOrderRequest - The base new order request data to be extended.
-     * @returns A new Order object with added timestamp and ID.
-     */
-    createOrder(newOrderRequest: NewOrderRequest): Order {
-        return {
-            ...newOrderRequest,
-            timestamp: Date.now(),
-            id: this.generateOrderId()
-        } as Order
-    }
+	/**
+	 * Creates a new order by extending the provided order data with a timestamp and unique ID.
+	 *
+	 * @param newOrderRequest - The base new order request data to be extended.
+	 * @returns A new Order object with added timestamp and ID.
+	 */
+	createOrder(newOrderRequest: NewOrderRequest): Order {
+		return {
+			...newOrderRequest,
+			timestamp: Date.now(),
+			id: this.generateOrderId(),
+		} as Order;
+	}
 
 	submitOrder(order: Order): Order {
 		if (order.side === "buy") {
@@ -46,7 +46,6 @@ export default class MatchingEngine {
 		} else if (order.side === "sell") {
 			this.matchSellOrder(order);
 		}
-        this.orderBook.updateWithOrder(order)
 
 		return order;
 	}
@@ -72,8 +71,8 @@ export default class MatchingEngine {
 				price: matchedSell.price,
 				amount: matchAmount,
 				timestamp: Date.now(),
-				sellCurrency: matchedSell.currency,
-				buyCurrency: buyOrder.currency,
+				baseCurrency: buyOrder.baseCurrency,
+				quoteCurrency: buyOrder.quoteCurrency,
 			};
 
 			this.trades.push(trade);
@@ -113,8 +112,8 @@ export default class MatchingEngine {
 				price: matchedBuy.price,
 				amount: matchAmount,
 				timestamp: Date.now(),
-				sellCurrency: sellOrder.currency,
-				buyCurrency: matchedBuy.currency,
+				baseCurrency: sellOrder.baseCurrency,
+				quoteCurrency: sellOrder.quoteCurrency,
 				buyerId: matchedBuy.userId,
 				sellerId: sellOrder.userId,
 			};
@@ -152,7 +151,11 @@ export default class MatchingEngine {
 		return this.trades.slice(-limit);
 	}
 
-    getOrderBook(depth=10) {
-        return this.orderBook.getSummary(depth);
-    }
+	getOrderBookSummary() {
+		return this.orderBook.getSummary();
+	}
+
+	getOrderBookFull() {
+		return this.orderBook.getFullOrderBook();
+	}
 }
