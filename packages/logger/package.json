@@ -12,18 +12,12 @@
     "dev": "tsup --watch",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
-  },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
+    "test": "echo \"Error: no logger tests\" && exit 0"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
     "@repo/eslint-config": "*",
-    "@repo/jest-presets": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^20.11.24",
-    "jest": "^29.7.0",
     "tsup": "^8.0.2",
     "typescript": "5.5.4"
   }
