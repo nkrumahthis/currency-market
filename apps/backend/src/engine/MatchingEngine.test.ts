@@ -1,4 +1,4 @@
-import MatchingEngine from "@/engine/MatchingEngine";
+import MatchingEngine from "./MatchingEngine";
 import { NewOrderRequest, Order } from "@/types";
 
 describe("MatchingEngine", () => {

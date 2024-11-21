@@ -1,5 +1,5 @@
-import { TradeRepository } from "@/repositories/TradeRepository";
 import { MessageConsumer, MessageProducer, Trade } from "@/types";
+import { TradeRepository } from "@/repositories/TradeRepository";
 
 export default class TradeExecutionService {
 	private repository: TradeRepository;

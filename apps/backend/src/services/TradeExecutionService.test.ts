@@ -1,6 +1,6 @@
 import { TradeRepository } from "@/repositories/TradeRepository";
 import { MessageConsumer, MessageProducer } from "@/types";
-import TradeExecutionService from "@/services/TradeExecutionService";
+import TradeExecutionService from "./TradeExecutionService";
 import { Trade } from "@/types";
 
 const mockTrade: Trade = {
