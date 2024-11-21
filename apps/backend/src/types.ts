@@ -1,4 +1,4 @@
-export type Order = {
+export interface Order {
 	id: string;
 	side: "buy" | "sell";
 	price: number;
@@ -9,18 +9,18 @@ export type Order = {
     quoteCurrency: string;
 };
 
-export type BankDetails = {
+export interface BankDetails {
     recipentName: string;
     bankName: string;
     accountNumber: number;
     swift: string;
 }
 
-export type Invoice = {
+export interface Invoice {
     filePath: string;
 }
 
-export type Transaction = {
+export interface Transaction {
     id: string;
     timestamp: number;
     sellOrderId?: string;
@@ -38,7 +38,7 @@ export type Transaction = {
     bankDetails: BankDetails;
 }
 
-export type NewOrderRequest = {
+export interface NewOrderRequest {
 	side: "buy" | "sell";
 	price: number;
 	amount: number;
@@ -47,7 +47,7 @@ export type NewOrderRequest = {
 	userId?: string;
 };
 
-export type Trade = {
+export interface Trade {
 	buyerId: string;
 	buyOrderId: string;
 	sellerId: string;
@@ -59,25 +59,25 @@ export type Trade = {
 	timestamp: number;
 };
 
-export type OrderBook = {
+export interface OrderBook {
 	bids: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
 	asks: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
 	
 }
 
-export interface IMessageProducer {
-	connect(): Promise<void>;
-	disconnect(): Promise<void>;
-	send(topic: string, key: string, value: string): Promise<void>;
+export interface MessageProducer {
+	connect: () => Promise<void>;
+	disconnect: () => Promise<void>;
+	send: (topic: string, key: string, value: string) => Promise<void>;
 }
 
-export interface IMessageConsumer {
-	connect(): Promise<void>;
-	disconnect(): Promise<void>;
-	subscribe(topic: string, fromBeginning?: boolean): Promise<void>;
-	onMessage(handler: (message: any) => Promise<void>): Promise<void>;
+export interface MessageConsumer {
+	connect: () => Promise<void>;
+	disconnect: () => Promise<void>;
+	subscribe: (topic: string, fromBeginning?: boolean) => Promise<void>;
+	onMessage: (handler: (message: object) => Promise<void>) => Promise<void>;
 }
 
-export interface ITradeIdGenerator {
-	generate(): Promise<string>;
+export interface TradeIdGenerator {
+	generate: () => Promise<string>;
 }

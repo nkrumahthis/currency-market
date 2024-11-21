@@ -1,28 +1,25 @@
 {
-  "name": "currency-market",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "test:watch": "turbo run test:watch",
     "typecheck": "turbo run typecheck"
   },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "currency-market",
   "packageManager": "npm@10.8.2",
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "devDependencies": {
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
-    "turbo": "^2.3.0",
-    "typescript": "^5.6.3"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5"
-  }
+  ]
 }

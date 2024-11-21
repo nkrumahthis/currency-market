@@ -1,28 +1,29 @@
+
 import WebSocket from "ws";
 import MatchingEngine from "@/engine/MatchingEngine";
-import { Order, OrderBook, Trade } from "@/types";
+import type { Order, OrderBook, Trade } from "@/types";
 
-type Client = {
+interface Client {
   id: string;
   subscriptions: Set<string>;
   lastSeen: number;
 };
 
-type ErrorPayload = {
+interface ErrorPayload {
   message: string;
 };
 
-type OrderResult = {
+interface OrderResult {
   orderId: string;
   status: "pending" | "accepted" | "rejected";
 };
 
-type OrderBookUpdate = {
+interface OrderBookUpdate {
   orderBook: OrderBook;
   marketPrice: number;
 };
 
-type MessagePacket = {
+interface MessagePacket {
   type:
     | "order"
     | "trade"

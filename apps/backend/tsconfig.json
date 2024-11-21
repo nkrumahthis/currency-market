@@ -1,14 +1,12 @@
 {
-	"compilerOptions": {
-		"lib": ["ES2015"],
-		"paths": {
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["ES2015"],
+    "paths": {
 			"@/*": ["./src/*"]
 		},
-		"esModuleInterop": true,
-		"outDir": "dist",
-        "rootDir": ".",
-        "skipLibCheck": true
-	},
-	"exclude": ["node_modules"],
-	"include": ["."]
+    "outDir": "./dist"
+  },
+  "exclude": ["node_modules"],
+  "include": ["."]
 }

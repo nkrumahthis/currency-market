@@ -132,7 +132,7 @@ const TransactionForm = () => {
                                     onChange={handleAmountChange}
                                     step="0.01"
                                 />
-                                <span className="absolute right-3 top-2 text-gray-500">
+                                <span className="absolute right-8 top-2 text-gray-500">
                                     {formData.recipientCurrency}
                                 </span>
                             </div>
