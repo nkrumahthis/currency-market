@@ -1,15 +1,15 @@
-import { ITradeRepository } from "@/repositories/ITradeRepository";
-import { IMessageConsumer, IMessageProducer, Trade } from "@/types";
+import { TradeRepository } from "@/repositories/TradeRepository";
+import { MessageConsumer, MessageProducer, Trade } from "@/types";
 
 export default class TradeExecutionService {
-	private repository: ITradeRepository;
-	private messageProducer: IMessageProducer;
-	private messageConsumer: IMessageConsumer;
+	private repository: TradeRepository;
+	private messageProducer: MessageProducer;
+	private messageConsumer: MessageConsumer;
 
 	constructor(
-		repository: ITradeRepository,
-		messageProducer: IMessageProducer,
-		messageConsumer: IMessageConsumer
+		repository: TradeRepository,
+		messageProducer: MessageProducer,
+		messageConsumer: MessageConsumer
 	) {
 		this.repository = repository;
 		this.messageProducer = messageProducer;

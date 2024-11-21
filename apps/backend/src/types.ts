@@ -75,7 +75,7 @@ export interface MessageConsumer {
 	connect: () => Promise<void>;
 	disconnect: () => Promise<void>;
 	subscribe: (topic: string, fromBeginning?: boolean) => Promise<void>;
-	onMessage: (handler: (message: object) => Promise<void>) => Promise<void>;
+	onMessage: (handler: (messageCommand: { topic: string; partition: string; message: any; }) => Promise<void>) => Promise<void>;
 }
 
 export interface TradeIdGenerator {

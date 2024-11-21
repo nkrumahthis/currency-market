@@ -1,5 +1,5 @@
-import { ITradeRepository } from "@/repositories/ITradeRepository";
-import { IMessageConsumer, IMessageProducer } from "@/types";
+import { TradeRepository } from "@/repositories/TradeRepository";
+import { MessageConsumer, MessageProducer } from "@/types";
 import TradeExecutionService from "@/services/TradeExecutionService";
 import { Trade } from "@/types";
 
@@ -17,9 +17,9 @@ const mockTrade: Trade = {
 
 describe('TradeExecutionService', () => {
     let service: TradeExecutionService;
-    let mockRepository: jest.Mocked<ITradeRepository>;
-    let mockMessageProducer: jest.Mocked<IMessageProducer>;
-    let mockMessageConsumer: jest.Mocked<IMessageConsumer>;
+    let mockRepository: jest.Mocked<TradeRepository>;
+    let mockMessageProducer: jest.Mocked<MessageProducer>;
+    let mockMessageConsumer: jest.Mocked<MessageConsumer>;
 
     beforeEach(() => {
         mockRepository = {

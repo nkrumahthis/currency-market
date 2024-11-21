@@ -1,6 +1,6 @@
 import { Trade } from "@/types";
 
-export interface ITradeRepository {
+export interface TradeRepository {
     connect(): Promise<void>;
     disconnect(): Promise<void>;
     getAccountBalance(accountId: string, currency: string): Promise<number>;

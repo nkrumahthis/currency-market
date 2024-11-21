@@ -1,7 +1,7 @@
-import { IMessageConsumer, IMessageProducer } from "@/types";
+import { MessageConsumer, MessageProducer } from "@/types";
 import Kafka from "kafkajs";
 
-export class KafkaProducer implements IMessageProducer {
+export class KafkaProducer implements MessageProducer {
     private producer: Kafka.Producer;
 
     constructor(kafka: Kafka.Kafka) {
@@ -24,7 +24,7 @@ export class KafkaProducer implements IMessageProducer {
     }
 }
 
-export class KafkaConsumer implements IMessageConsumer {
+export class KafkaConsumer implements MessageConsumer {
     private consumer: Kafka.Consumer;
 
     constructor(kafka: Kafka.Kafka, groupId: string) {
