@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 // import { AlertCircle } from 'lucide-react';
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -9,7 +10,6 @@ type TransactionType = {
     sourceCurrency: string;
     recipientCurrency: string;
     recipientAmount: string;
-    reference: string;
     recipientName: string;
     recipientBank: string;
     recipientAccountNumber: string;
@@ -18,6 +18,8 @@ type TransactionType = {
 }
 
 const TransactionForm = () => {
+    const router = useRouter()
+
     // Form state
     const [formData, setFormData] = useState<TransactionType>({
         // Source Currency Selection
@@ -29,14 +31,11 @@ const TransactionForm = () => {
         // Amount Information
         recipientAmount: '', // e.g. 12,300.50 EUR
 
-        // Transaction Details (shown in expanded view)
-        reference: '', // e.g. 253
-
         // Recipient Details (would be needed based on "Add details" button)
-        recipientName: '',
-        recipientBank: '',
-        recipientAccountNumber: '',
-        recipientSwift: '',
+        recipientName: 'Acme Corp',
+        recipientBank: 'Bank of Foo',
+        recipientAccountNumber: '111000942',
+        recipientSwift: '32410',
 
         // Invoice Upload
         invoice: null,
@@ -48,9 +47,26 @@ const TransactionForm = () => {
         capiFees: 0,
     });
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
-        // Handle form submission
+        
+        const response = await fetch("http://localhost:5001/payments", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+
+        if (response.ok) {
+            // Handle successful payment
+            alert("Payment successful!");
+            router.push('/customers/dashboard')
+        } else {
+            // Handle failed payment
+            alert("Payment failed. Please try again later.");
+        }
+
     };
 
     const handleAmountChange = (e: any) => {
@@ -65,10 +81,10 @@ const TransactionForm = () => {
 
     return (
         <div className="max-w-2xl mx-auto p-4">
-            <h1 className="text-4xl p-8">Customer Quote Request Form</h1>
+            <h1 className="text-4xl p-8">Invoice Payment Form</h1>
             <Card>
                 <CardHeader>
-                    <CardTitle>Request Quote</CardTitle>
+                    <CardTitle>Pay Invoice</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -255,7 +271,7 @@ const TransactionForm = () => {
                             type="submit"
                             className="w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800"
                         >
-                            Request quote
+                            SUBMIT
                         </button>
                     </form>
                 </CardContent>
