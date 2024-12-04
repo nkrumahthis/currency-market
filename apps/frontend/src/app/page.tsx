@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Wallet, Globe, Clock, TrendingDown, ArrowRight, CheckCircle } from 'lucide-react';
 import Link from "next/link"
+import Image from 'next/image';
 
 const Home = () => {
   const [demoData, setDemoData] = useState({
@@ -75,27 +76,33 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:pb-28 xl:pb-32">
             <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-              <div className="sm:text-center lg:text-left">
-                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                  <span className="block">International Payments</span>
-                  <span className="block text-blue-600">for African Importers</span>
-                </h1>
-                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  Save up to 10% on your international supplier payments. Fast, secure, and reliable currency exchange at competitive rates.
-                </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  <div className="rounded-md shadow flex space-x-8">
-                    <Link href={"/customers"} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
-                      Pay Your Invoice
-                    </Link>
-
-                    <Link href={"/partners"} className="w-full  flex items-center justify-center px-8 py-3 text-base font-medium rounded-md text-blue-600 bg-transparent border-4 hover:bg-blue-50 md:py-4 md:text-lg md:px-10">
-                      Buy Local Currency
-                    </Link>
+              <div className="flex content-center">
+                <div className="sm:text-center lg:text-left">
+                  <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                    <span className="block">International Payments</span>
+                    <span className="block text-blue-600">for African Importers</span>
+                  </h1>
+                  <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                    Save up to 10% on your international supplier payments. Fast, secure, and reliable currency exchange at competitive rates.
+                  </p>
+                  <div className="flex flex-col mt-5 sm:mt-8 gap-4">
+                    <div className="sm:flex sm:justify-center lg:justify-start">
+                      <div className="rounded-md shadow flex space-x-8">
+                        <Link href={"/customers"} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                          Pay Your Invoice
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="sm:flex sm:justify-center lg:justify-start">
+                      <div className="rounded-md shadow flex space-x-8">
+                        <Link href={"/providers"} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
+                          Buy Forex
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                  
                 </div>
-                
+                <Image src="/invoice-payment-form.png" alt="" width={600} height={600} />
               </div>
             </main>
           </div>
@@ -190,16 +197,16 @@ const Home = () => {
             <div className="mt-4" style={{ height: "300px" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={rateData}>
-                  <XAxis 
+                  <XAxis
                     dataKey="time"
                     stroke="#6B7280"
                   />
-                  <YAxis 
+                  <YAxis
                     domain={['dataMin - 1', 'dataMax + 1']}
                     stroke="#6B7280"
                   />
                   <Tooltip />
-                  <Line 
+                  <Line
                     type="monotone"
                     dataKey="rate"
                     stroke="#2563EB"
