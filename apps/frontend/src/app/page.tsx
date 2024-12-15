@@ -60,12 +60,12 @@ const Home = () => {
               <span className="text-2xl font-bold text-blue-600">CurrMarket</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/auth/login" className="px-4 py-2 font-medium text-gray-600 hover:text-gray-900">
                 Login
-              </button>
-              <button className="px-4 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+              </Link>
+              <Link href="/auth/register" className="px-4 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </div>
