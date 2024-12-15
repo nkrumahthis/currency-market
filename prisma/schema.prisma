@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  refreshTokens String[]  @default([])
+  type          UserType // CUSTOMER, PARTNER, or ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  invoices      Invoice[] @relation("CustomerInvoices")
+  buyerTrades   Trade[]   @relation("BuyerTrades")
+  sellerTrades  Trade[]   @relation("SellerTrades")
+  orders        Order[]
+}
+
+enum UserType {
+  CUSTOMER
+  PARTNER
+  ADMIN
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  customerId     String
+  customer       User          @relation("CustomerInvoices", fields: [customerId], references: [id])
+  amount         Float // Amount of target currency (e.g., EUR) to pay
+  currencyPair   CurrencyPair  @relation(fields: [currencyPairId], references: [id])
+  currencyPairId String
+  exchangeRate   Float // Exchange rate set by the admin for this invoice
+  status         InvoiceStatus
+  bankDetails    BankDetails   @relation(fields: [bankDetailsId], references: [id])
+  bankDetailsId  String
+  upload         File[]
+  fileId         String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model BankDetails {
+  id            String    @id @default(cuid())
+  bankName      String
+  accountName   String
+  accountNumber String
+  swiftCode     String?
+  iban          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Invoice       Invoice[]
+}
+
+model File {
+  id        String   @id @default(cuid())
+  filePath  String // Path or URL to the stored file
+  fileType  String // MIME type of the file (e.g., application/pdf, image/png)
+  fileSize  Int // Size of the file in bytes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model CurrencyPair {
+  id            String         @id @default(cuid())
+  baseCurrency  String // e.g., EUR
+  quoteCurrency String // e.g., XOF
+  trades        Trade[]        @relation("CurrencyPairTrades")
+  exchangeRates ExchangeRate[]
+  Invoice       Invoice[]
+  Order         Order[]
+}
+
+model ExchangeRate {
+  id             String       @id @default(cuid())
+  currencyPairId String
+  currencyPair   CurrencyPair @relation(fields: [currencyPairId], references: [id])
+  rate           Float // Exchange rate set for the customer
+  adminId        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Order {
+  id             String         @id @default(cuid())
+  userId         String
+  direction      OrderDirection // BUY or SELL
+  currencyPair   CurrencyPair   @relation(fields: [currencyPairId], references: [id])
+  currencyPairId String
+  amount         Float // Amount of currency to trade
+  price          Float // Price (rate) in the counter currency
+  status         OrderStatus
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+}
+
+enum OrderDirection {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model Trade {
+  id             String       @id @default(cuid())
+  buyerId        String
+  sellerId       String
+  buyer          User         @relation("BuyerTrades", fields: [buyerId], references: [id])
+  seller         User         @relation("SellerTrades", fields: [sellerId], references: [id])
+  currencyPair   CurrencyPair @relation("CurrencyPairTrades", fields: [currencyPairId], references: [id])
+  currencyPairId String
+  amount         Float // Amount of traded currency
+  price          Float // Price agreed for the trade
+  createdAt      DateTime     @default(now())
+  userId         String?
+}
