@@ -1,9 +1,12 @@
 import { Router } from "express"
 import type { NewOrderRequest } from "@/types"
 import MatchingEngine from "@/engine/MatchingEngine"
+import authRoutes from "@/routes/auth.route"
 
 const router =  Router()
 const matchingEngine: MatchingEngine = new MatchingEngine();
+
+router.use('/auth', authRoutes)
 
 router.get("/trades", (_, res) => {
     // return all trades from matching engine
