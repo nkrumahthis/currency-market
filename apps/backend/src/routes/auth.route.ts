@@ -1,16 +1,10 @@
 import express from "express";
-import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma";
-import bcrypt from "bcrypt";
+import { comparePasswords, generateToken, hashPassword } from "@/lib/auth.lib";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your_secure_secret";
 
 // helper to generate jwt
-function generateToken(user: { id: string; email: string; type: string }) {
-	const token = jwt.sign(user, JWT_SECRET, { expiresIn: "1h" });
-	return token;
-}
 
 router.post("/register", async (req, res) => {
 	const { name, email, password } = req.body;
@@ -21,7 +15,7 @@ router.post("/register", async (req, res) => {
 			return res.status(400).json({ error: "Email already in use." });
 		}
 
-		const hashedPassword = await bcrypt.hash(password, 10);
+		const hashedPassword = await hashPassword(password);
 
 		const user = await prisma.user.create({
 			data: {
@@ -53,7 +47,7 @@ router.post("/login", async (req, res) => {
 		}
         // Replying 401 again because I don't want to give clues about the 
         // existence of the user
-		const isPasswordValid = await bcrypt.compare(password, user.password);
+		const isPasswordValid = comparePasswords(password, user.password);
         if (!isPasswordValid) {
 			return res.status(401).json({ error: "Invalid credentials." });
 		}
