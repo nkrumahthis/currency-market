@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String         @unique
   password      String
-  refreshTokens String[]  @default([])
+  refreshTokens String[]       @default([])
   type          UserType // CUSTOMER, PARTNER, or ADMIN
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  invoices      Invoice[] @relation("CustomerInvoices")
-  buyerTrades   Trade[]   @relation("BuyerTrades")
-  sellerTrades  Trade[]   @relation("SellerTrades")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  invoices      Invoice[]      @relation("CustomerInvoices")
+  buyerTrades   Trade[]        @relation("BuyerTrades")
+  sellerTrades  Trade[]        @relation("SellerTrades")
   orders        Order[]
+  ExchangeRate  ExchangeRate[]
 }
 
 enum UserType {
@@ -33,6 +34,8 @@ model Invoice {
   customerId     String
   customer       User          @relation("CustomerInvoices", fields: [customerId], references: [id])
   amount         Float // Amount of target currency (e.g., EUR) to pay
+  baseCurrency   String
+  quoteCurrency  String
   currencyPair   CurrencyPair  @relation(fields: [currencyPairId], references: [id])
   currencyPairId String
   exchangeRate   Float // Exchange rate set by the admin for this invoice
@@ -92,23 +95,28 @@ model ExchangeRate {
   adminId        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+  admin          User         @relation(fields: [adminId], references: [id])
 }
 
 model Order {
-  id             String         @id @default(cuid())
+  id             String       @id @default(cuid())
   userId         String
-  direction      OrderDirection // BUY or SELL
-  currencyPair   CurrencyPair   @relation(fields: [currencyPairId], references: [id])
+  side           OrderSide // BUY or SELL
+  currencyPair   CurrencyPair @relation(fields: [currencyPairId], references: [id])
   currencyPairId String
+  baseCurrency   String
+  quoteCurrency  String
+  rate           Float // Exchange rate set for the customer
   amount         Float // Amount of currency to trade
-  price          Float // Price (rate) in the counter currency
   status         OrderStatus
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  user           User           @relation(fields: [userId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id])
+  buyTrades      Trade[]      @relation("BuyOrders")
+  sellTrades     Trade[]      @relation("SellOrders")
 }
 
-enum OrderDirection {
+enum OrderSide {
   BUY
   SELL
 }
@@ -128,7 +136,11 @@ model Trade {
   currencyPair   CurrencyPair @relation("CurrencyPairTrades", fields: [currencyPairId], references: [id])
   currencyPairId String
   amount         Float // Amount of traded currency
-  price          Float // Price agreed for the trade
+  rate           Float // Price agreed for the trade
   createdAt      DateTime     @default(now())
   userId         String?
+  buyOrderId     String
+  buyOrder       Order        @relation("BuyOrders", fields: [buyOrderId], references: [id])
+  sellOrderId    String
+  sellOrder      Order        @relation("SellOrders", fields: [sellOrderId], references: [id])
 }
