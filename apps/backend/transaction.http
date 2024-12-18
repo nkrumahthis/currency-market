@@ -1,0 +1,36 @@
+### get orders
+GET http://localhost:5001/orders HTTP/1.1
+
+###
+GET http://localhost:5001/rates
+
+### BUY
+POST http://localhost:5001/orders HTTP/1.1
+content-type: application/json
+
+{
+    "userId": "system",
+    "side": "BUY",
+    "currencyPairId": "GHS-USD",
+    "amount": 300,
+    "rate": 14.5,
+    "baseCurrency": "GHS",
+    "quoteCurrency": "USD"
+}
+
+### SELL
+POST http://localhost:5001/orders HTTP/1.1
+content-type: application/json
+
+{
+    "userId": "system",
+    "side": "SELL",
+    "currencyPairId": "GHS-USD",
+    "amount": 100,
+    "rate": 0.068,
+    "baseCurrency": "GHS",
+    "quoteCurrency": "USD"
+}
+
+### check trades
+GET http://localhost:5001/trades HTTP/1.1
