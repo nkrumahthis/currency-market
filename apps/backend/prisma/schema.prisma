@@ -122,9 +122,20 @@ enum OrderSide {
 }
 
 enum OrderStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
+  PENDING    // Initial state, order received but not yet processed
+  NEW        // Order has been accepted by the system
+  PARTIALLY_FILLED  // Some quantity has been filled, but not all
+  FILLED     // Order has been completely filled
+  CANCELLED  // Order was cancelled by the user
+  REJECTED   // Order was rejected by the system (e.g., insufficient funds)
+  EXPIRED    // Order expired (for orders with time in force)
+}
+
+enum TradeStatus {
+  PENDING    // Trade match occurred but settlement not yet processed
+  SETTLED    // Trade has been settled, funds have been exchanged
+  FAILED     // Settlement failed (e.g., insufficient funds)
+  REVERSED   // Trade was reversed due to an error or dispute
 }
 
 model Trade {
@@ -135,6 +146,9 @@ model Trade {
   seller         User         @relation("SellerTrades", fields: [sellerId], references: [id])
   currencyPair   CurrencyPair @relation("CurrencyPairTrades", fields: [currencyPairId], references: [id])
   currencyPairId String
+  baseCurrency   String
+  quoteCurrency  String
+  status         TradeStatus
   amount         Float // Amount of traded currency
   rate           Float // Price agreed for the trade
   createdAt      DateTime     @default(now())

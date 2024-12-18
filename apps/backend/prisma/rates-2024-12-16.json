@@ -1,0 +1,88 @@
+[
+    {
+      "rate": 14.67,
+      "adminId": "system",
+      "currencyPairId": "USD-GHS"
+    },
+    {
+      "rate": 0.79,
+      "adminId": "system",
+      "currencyPairId": "USD-GBP"
+    },
+    {
+      "rate": 0.95,
+      "adminId": "system",
+      "currencyPairId": "USD-EUR"
+    },
+    {
+      "rate": 586.84,
+      "adminId": "system",
+      "currencyPairId": "USD-XOF"
+    },
+    {
+      "rate": 586.84,
+      "adminId": "system",
+      "currencyPairId": "USD-XAF"
+    },
+    {
+      "rate": 774.34,
+      "adminId": "system",
+      "currencyPairId": "USD-NGN"
+    },
+    {
+      "rate": 40.55,
+      "adminId": "system",
+      "currencyPairId": "GHS-XOF"
+    },
+    {
+      "rate": 40.55,
+      "adminId": "system",
+      "currencyPairId": "GHS-XAF"
+    },
+    {
+      "rate": 52.78,
+      "adminId": "system",
+      "currencyPairId": "GHS-NGN"
+    },
+    {
+      "rate": 744.50,
+      "adminId": "system",
+      "currencyPairId": "GBP-XOF"
+    },
+    {
+      "rate": 744.50,
+      "adminId": "system",
+      "currencyPairId": "GBP-XAF"
+    },
+    {
+      "rate": 982.00,
+      "adminId": "system",
+      "currencyPairId": "GBP-NGN"
+    },
+    {
+      "rate": 655.96,
+      "adminId": "system",
+      "currencyPairId": "EUR-XOF"
+    },
+    {
+      "rate": 655.96,
+      "adminId": "system",
+      "currencyPairId": "EUR-XAF"
+    },
+    {
+      "rate": 813.00,
+      "adminId": "system",
+      "currencyPairId": "EUR-NGN"
+    },
+    {
+      "rate": 1.24,
+      "adminId": "system",
+      "currencyPairId": "XOF-NGN"
+    },
+    {
+      "rate": 1.24,
+      "adminId": "system",
+      "currencyPairId": "XAF-NGN"
+    }
+  ]
+  
