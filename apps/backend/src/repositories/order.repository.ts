@@ -13,14 +13,23 @@ export default class OrderRepository {
 		baseCurrency: string;
 		quoteCurrency: string;
 	}): Promise<Order> {
-		return await prisma.order.create({ data: {...data, id: this.generateOrderId(), status: OrderStatus.PENDING } });
+		return await prisma.order.create({
+			data: {
+				...data,
+				id: this.generateOrderId(),
+				status: OrderStatus.PENDING,
+			},
+		});
 	}
-    private generateOrderId(): string {
-        return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
-    }
+	private generateOrderId(): string {
+		return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+	}
 
 	async getAll() {
-		return await prisma.order.findMany();
+		return await prisma.order.findMany({
+			include: { user: true, currencyPair: true },
+			orderBy: { updatedAt: "desc" },
+		});
 	}
 
 	async getById(id: string) {
@@ -31,12 +40,13 @@ export default class OrderRepository {
 		return await prisma.order.findMany({
 			where: {
 				status: {
-					in: ['PENDING', 'NEW', 'PARTIALLY_FILLED']
-				}
-			}, orderBy: {
-				createdAt: 'asc'
-			}
-		})
+					in: ["PENDING", "NEW", "PARTIALLY_FILLED"],
+				},
+			},
+			orderBy: {
+				createdAt: "asc",
+			},
+		});
 	}
 
 	async updateStatus(id: string, status: OrderStatus): Promise<Order> {
