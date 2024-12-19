@@ -23,7 +23,7 @@ export function verifyToken(token: string) {
 }
 
 export function generateToken(user: { id: string; email: string; type: string }) {
-	const token = jwt.sign(user, JWT_SECRET, { expiresIn: "1h" });
+	const token = jwt.sign(user, JWT_SECRET, { expiresIn: "24h" });
 	return token;
 }
 
