@@ -131,7 +131,7 @@ export default function InvoiceForm() {
 
         if (response.ok) {
             alert("Payment successful!");
-            router.push('/customers/dashboard');
+            router.push('/customers');
         } else {
             alert("Payment request failed. Please try again later.");
         }
