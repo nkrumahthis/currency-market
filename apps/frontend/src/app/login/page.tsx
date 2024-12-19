@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import { login } from './actions';
 
 function page() {
     const [email, setEmail] = useState("")
@@ -14,22 +15,7 @@ function page() {
         e.preventDefault();
 
         try {
-            const response = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                localStorage.setItem("token", data.token)
-                alert("Login successful")
-                router.push("/dashboard")
-            } else {
-                alert("Login request failed. Please try again")
-            }
+            await login({ email, password })
         } catch (err) {
             console.error(err)
             alert("Login process failed. Please try again")
