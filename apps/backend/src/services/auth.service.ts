@@ -1,7 +1,7 @@
-import { UserRepository } from "../repositories/user.repository";
+import UserRepository from "../repositories/user.repository";
 import { comparePasswords, generateToken } from "@/lib/auth.lib";
 
-export class AuthService {
+export default class AuthService {
 	constructor(private readonly userRepository: UserRepository) {}
 
 	async register(
@@ -10,19 +10,16 @@ export class AuthService {
 		password: string,
 		type: "CUSTOMER" | "PARTNER" | "ADMIN"
 	) {
-		const user = await this.userRepository.createUser(
-			name,
-			email,
-			password,
-			type
-		);
+		const user = await this.userRepository.create(name, email, password, type);
 		return {
-            name, email, type
-        };
+			name: user.name,
+			email: user.email,
+			type: user.type,
+		};
 	}
 
 	async login(email: string, password: string) {
-		const user = await this.userRepository.getUserByEmail(email);
+		const user = await this.userRepository.getByEmail(email);
 		if (!user) {
 			throw new Error("Invalid credentials.");
 		}
