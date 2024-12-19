@@ -50,7 +50,13 @@ export default class InvoiceRepository {
 	}
 
 	async getAll(): Promise<Invoice[]> {
-		return prisma.invoice.findMany();
+		return prisma.invoice.findMany({
+			include: {
+				bankDetails: true,
+				upload: true,
+				customer: true
+			}
+		});
 	}
 
 	async updateStatus(id: string, status: InvoiceStatus): Promise<Invoice> {
@@ -66,6 +72,7 @@ export default class InvoiceRepository {
 			include: {
 				bankDetails: true,
 				upload: true,
+				customer: true,
 			},
 		});
 	}

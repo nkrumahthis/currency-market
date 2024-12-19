@@ -7,6 +7,13 @@ export default class RateRepository {
 				currencyPairId: true,
 				currencyPair: true,
 				rate: true,
+				admin: {
+					select: {
+						name: true,
+						email: true,
+						type: true,
+					}
+				}
 			},
 			orderBy: { updatedAt: "desc" },
 			distinct: ["currencyPairId"],
