@@ -6,6 +6,7 @@ import RateService from "@/services/rate.service";
 import InvoiceService from "@/services/invoice.service";
 import { Repositories } from "@/repositories";
 import { IMatchingEngine } from "@/domain/MatchingEngine";
+import { S3FileUploader } from "@/lib/uploader";
 
 export interface Services {
 	auth: AuthService;
@@ -27,6 +28,6 @@ export default function Services(
 		order: orderService,
 		user: new UserService(repos.user),
 		rate: new RateService(repos.rate),
-		invoice: new InvoiceService(repos.invoice, orderService),
+		invoice: new InvoiceService(repos.invoice, orderService, new S3FileUploader()),
 	};
 }

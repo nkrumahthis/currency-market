@@ -38,12 +38,10 @@ model Invoice {
   quoteCurrency  String
   currencyPair   CurrencyPair  @relation(fields: [currencyPairId], references: [id])
   currencyPairId String
-  exchangeRate   Float // Exchange rate set by the admin for this invoice
+  exchangeRate   Float // Exchange rate set by the admin for the invoice
   status         InvoiceStatus
-  bankDetails    BankDetails   @relation(fields: [bankDetailsId], references: [id])
-  bankDetailsId  String
-  upload         File[]
-  fileId         String
+  bankDetails    BankDetails?
+  upload         File?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -57,7 +55,8 @@ model BankDetails {
   iban          String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  Invoice       Invoice[]
+  invoiceId     String @unique
+  Invoice       Invoice @relation(fields: [invoiceId], references: [id])
 }
 
 model File {
@@ -67,7 +66,7 @@ model File {
   fileSize  Int // Size of the file in bytes
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  invoiceId String
+  invoiceId String @unique
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
 }
 
