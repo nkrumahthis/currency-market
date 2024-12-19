@@ -1,17 +1,30 @@
 import { hashPassword } from "@/lib/auth.lib";
 import { prisma } from "../lib/prisma";
-import { User } from "@prisma/client";
+import { User, UserType } from "@prisma/client";
 
-export class UserRepository {
-	async getUserById(id: string): Promise<User | null> {
+export default class UserRepository {
+	async getAll() {
+		const rawUsers = await prisma.user.findMany();
+		// Filter out sensitive fields
+		const users = rawUsers.map((user) => ({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			type: user.type,
+		}));
+
+		return await users;
+	}
+
+	async getById(id: string): Promise<User | null> {
 		return await prisma.user.findUnique({ where: { id } });
 	}
 
-	async createUser(
+	async create(
 		name: string,
 		email: string,
 		password: string,
-		type: "CUSTOMER" | "PARTNER" | "ADMIN"
+		type: UserType
 	): Promise<User> {
 		const existingUser = await prisma.user.findUnique({ where: { email } });
 		if (existingUser) {
@@ -21,6 +34,7 @@ export class UserRepository {
 		const hashedPassword = await hashPassword(password);
 		const user = await prisma.user.create({
 			data: {
+				id: "system",
 				name,
 				email,
 				password: hashedPassword,
@@ -31,7 +45,7 @@ export class UserRepository {
 		return user;
 	}
 
-	async getUserByEmail(email: string) {
+	async getByEmail(email: string) {
 		return await prisma.user.findUnique({ where: { email } });
 	}
 }

@@ -1,8 +1,8 @@
 import { Pool, PoolClient } from "pg";
 import { Trade } from "@/types";
-import { TradeRepository } from "./TradeRepository";
+import { ITradeRepository } from "./ITradeRepository";
 
-export default class PgTradeRepository implements TradeRepository {
+export default class PgTradeRepository implements ITradeRepository {
     private readonly QUERIES = {
         GET_BALANCE: `
             SELECT amount 
