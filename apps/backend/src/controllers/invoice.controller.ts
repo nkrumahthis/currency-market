@@ -10,12 +10,15 @@ export default function InvoiceController(invoiceService: InvoiceService) {
 	const router = express.Router();
 	const upload = multer({ storage: multer.memoryStorage() });
 
-	router.get("/", (req, res) => {
-		if (req.user!.role === UserType.CUSTOMER) {
-			const invoices = invoiceService.getAllByCustomerId(req.user!.userId);
+	router.get("/", async (req, res) => {
+		console.log(req.headers)
+		if (req.headers["user-role"]! === UserType.CUSTOMER) {
+			const invoices = await invoiceService.getAllByCustomerId(
+				req.headers["user-id"]! as string
+			);
 			return res.json({ data: invoices });
-		} else if (req.user!.role === UserType.ADMIN) {
-			const invoices = invoiceService.getAll();
+		} else if (req.headers["user-role"]! === UserType.ADMIN) {
+			const invoices = await invoiceService.getAll();
 			return res.json({ data: invoices });
 		} else
 			return res
@@ -32,28 +35,28 @@ export default function InvoiceController(invoiceService: InvoiceService) {
 		if (!uploadedFile) {
 			return res.status(400).json({ error: "No file uploaded" });
 		}
-		console.warn("you are using default customer id")
+		console.warn("you are using default customer id");
 		const data: CreateInvoiceData = {
-            invoice: {
-                customerId: "customer", // Placeholder for userId
-                amount: parseFloat(req.body.amount),
-                currencyPairId: `${req.body.baseCurrency}-${req.body.quoteCurrency}`,
-                exchangeRate: parseFloat(req.body.exchangeRate),
-                status: "PENDING",
-                baseCurrency: req.body.baseCurrency,
-                quoteCurrency: req.body.quoteCurrency,
-            },
-            bankDetails: {
-                bankName: req.body.bankName,
-                accountName: req.body.accountName,
-                accountNumber: req.body.accountNumber,
-                swiftCode: req.body.swift || undefined,
-                iban: req.body.iban || undefined,
-            },
-            file: {
-                file: uploadedFile,
-            },
-        };
+			invoice: {
+				customerId: "customer", // Placeholder for userId
+				amount: parseFloat(req.body.amount),
+				currencyPairId: `${req.body.baseCurrency}-${req.body.quoteCurrency}`,
+				exchangeRate: parseFloat(req.body.exchangeRate),
+				status: "PENDING",
+				baseCurrency: req.body.baseCurrency,
+				quoteCurrency: req.body.quoteCurrency,
+			},
+			bankDetails: {
+				bankName: req.body.bankName,
+				accountName: req.body.accountName,
+				accountNumber: req.body.accountNumber,
+				swiftCode: req.body.swift || undefined,
+				iban: req.body.iban || undefined,
+			},
+			file: {
+				file: uploadedFile,
+			},
+		};
 
 		const invoice = await invoiceService.create(data);
 		return res.status(201).json({ data: invoice });

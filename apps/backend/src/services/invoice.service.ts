@@ -15,6 +15,7 @@ export default class InvoiceService {
 	) {}
 
 	async getAllByCustomerId(customerId: string): Promise<Invoice[]> {
+		console.log("getAllByCustomerId", customerId);
 		return await this.invoiceRepository.getByCustomerId(customerId);
 	}
 

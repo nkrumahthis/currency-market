@@ -39,7 +39,14 @@ export default class InvoiceRepository {
 	}
 
 	async getByCustomerId(customerId: string): Promise<Invoice[]> {
-		return prisma.invoice.findMany({ where: { customerId } });
+		return prisma.invoice.findMany({
+			where: { customerId },
+			include: {
+				bankDetails: true,
+				upload: true,
+				customer: true
+			},
+		});
 	}
 
 	async getAll(): Promise<Invoice[]> {

@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { revalidatePath } from 'next/cache';
 
 interface NewOrderRequest {
     amount: number;
@@ -111,11 +113,18 @@ export default function InvoiceForm() {
         const formDataToSend = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
-                formDataToSend.append(key, value.toString());
+                if (key === 'fileUpload' && value instanceof File) {
+                    formDataToSend.append(key, value);
+                } else if (key === "amount") 
+                    formDataToSend.append(key, calculatedValues.baseCurrencyAmount.toString())
+                else {
+                    formDataToSend.append(key, value.toString());
+                }
             }
         });
+        formDataToSend.append('exchangeRate', exchangeRateRef.current!.toString());
 
-        const response = await fetch("http://localhost:5001/orders", {
+        const response = await fetch("http://localhost:5001/invoices", {
             method: "POST",
             body: formDataToSend,
         });
@@ -137,12 +146,8 @@ export default function InvoiceForm() {
         }));
     };
 
-    const handleCurrencyChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'base' | 'quote') => {
-        const newCurrency = e.target.value;
-        const updatedFormData = { ...formData, [type === 'base' ? 'baseCurrency' : 'quoteCurrency']: newCurrency };
-        setFormData(updatedFormData);
-
-        const response = await fetch(`http://localhost:5001/rates/${updatedFormData.baseCurrency}-${updatedFormData.quoteCurrency}`);
+    const fetchExchangeRate = async (baseCurrency: string, quoteCurrency: string) => {
+        const response = await fetch(`http://localhost:5001/rates/${baseCurrency}-${quoteCurrency}`);
         const data = await response.json();
         exchangeRateRef.current = data.data.rate;
         setCalculatedValues(prev => ({
@@ -151,23 +156,25 @@ export default function InvoiceForm() {
         }));
     };
 
-    useEffect(() => {
-        const fetchInitialRate = async () => {
-            const response = await fetch(`http://localhost:5001/rates/${formData.baseCurrency}-${formData.quoteCurrency}`);
-            const data = await response.json();
-            exchangeRateRef.current = data.data.rate;
-            setCalculatedValues(prev => ({
-                ...prev,
-                exchangeRate: data.data.rate
-            }));
-        };
+    const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'base' | 'quote') => {
+        const newCurrency = e.target.value;
+        const updatedFormData = { ...formData, [type === 'base' ? 'baseCurrency' : 'quoteCurrency']: newCurrency };
+        setFormData(updatedFormData);
+        fetchExchangeRate(updatedFormData.baseCurrency, updatedFormData.quoteCurrency);
+    };
 
-        fetchInitialRate();
+    useEffect(() => {
+        fetchExchangeRate(formData.baseCurrency, formData.quoteCurrency);
     }, []);
 
     return (
         <div className="max-w-2xl mx-auto p-4">
-            <h1 className="text-4xl p-8">Invoice Payment Form</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-4xl p-8">Invoice Payment Form</h1>
+                <Button variant={"outline"} onClick={() => router.back()}>
+                    Invoice Dashboard
+                </Button>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>Pay Invoice</CardTitle>
