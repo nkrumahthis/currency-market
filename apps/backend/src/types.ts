@@ -6,46 +6,46 @@ export interface Order {
 	timestamp: number;
 	userId: string;
 	baseCurrency: string;
-    quoteCurrency: string;
-};
+	quoteCurrency: string;
+}
 
 export interface BankDetails {
-    recipentName: string;
-    bankName: string;
-    accountNumber: number;
-    swift: string;
+	recipentName: string;
+	bankName: string;
+	accountNumber: number;
+	swift: string;
 }
 
 export interface Invoice {
-    filePath: string;
+	filePath: string;
 }
 
 export interface Transaction {
-    id: string;
-    timestamp: number;
-    sellOrderId?: string;
-    buyOrderId?: string;
-    sellOrders?: Order[];
-    buyOrder?: Order;
-    baseCurrency: string;
-    quoteCurrency: string;
-    userId: string;
-    recipientAmount: number;
-    recipientCurrency: string;
-    senderAmount: number;
-    senderCurrency: string;
-    invoice: Invoice;
-    bankDetails: BankDetails;
+	id: string;
+	timestamp: number;
+	sellOrderId?: string;
+	buyOrderId?: string;
+	sellOrders?: Order[];
+	buyOrder?: Order;
+	baseCurrency: string;
+	quoteCurrency: string;
+	userId: string;
+	recipientAmount: number;
+	recipientCurrency: string;
+	senderAmount: number;
+	senderCurrency: string;
+	invoice: Invoice;
+	bankDetails: BankDetails;
 }
 
 export interface NewOrderRequest {
 	side: "buy" | "sell";
 	price: number;
 	amount: number;
-    baseCurrency: string;
+	baseCurrency: string;
 	quoteCurrency: string;
 	userId?: string;
-};
+}
 
 export interface Trade {
 	buyerId: string;
@@ -57,12 +57,21 @@ export interface Trade {
 	baseCurrency: string;
 	quoteCurrency: string;
 	timestamp: number;
-};
+}
 
 export interface OrderBook {
-	bids: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
-	asks: { price: number; amount?: number; amounts?: number[]; quoteCurrency: string }[];
-	
+	bids: {
+		price: number;
+		amount?: number;
+		amounts?: number[];
+		quoteCurrency: string;
+	}[];
+	asks: {
+		price: number;
+		amount?: number;
+		amounts?: number[];
+		quoteCurrency: string;
+	}[];
 }
 
 export interface MessageProducer {
@@ -75,9 +84,38 @@ export interface MessageConsumer {
 	connect: () => Promise<void>;
 	disconnect: () => Promise<void>;
 	subscribe: (topic: string, fromBeginning?: boolean) => Promise<void>;
-	onMessage: (handler: (messageCommand: { topic: string; partition: string; message: any; }) => Promise<void>) => Promise<void>;
+	onMessage: (
+		handler: (messageCommand: {
+			topic: string;
+			partition: string;
+			message: any;
+		}) => Promise<void>
+	) => Promise<void>;
 }
 
 export interface TradeIdGenerator {
 	generate: () => Promise<string>;
+}
+
+export interface CreateInvoiceData {
+	invoice: {
+		customerId: string;
+		amount: number;
+		currencyPairId: string;
+		exchangeRate: number;
+		status: "PENDING" | "PAID" | "CANCELLED";
+		baseCurrency: string;
+		quoteCurrency: string;
+	};
+	bankDetails: {
+		bankName: string;
+		accountName: string;
+		accountNumber: string;
+		swiftCode?: string;
+		iban?: string;
+	};
+	file: {
+		file: Express.Multer.File;
+		fileId?: string;
+	};
 }
