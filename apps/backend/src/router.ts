@@ -6,7 +6,7 @@ export default function Routes(controllers: Controllers): Router {
     
     router.use('/auth', controllers.auth)
     router.use("/invoices", controllers.invoice)
-    router.get("/trades", controllers.trade)
+    router.use("/trades", controllers.trade)
     router.use("/orders", controllers.order)
     router.use("/rates", controllers.rate)
     router.use('/users', controllers.user)

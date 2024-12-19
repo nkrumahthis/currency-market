@@ -3,7 +3,15 @@ import prisma from "../lib/prisma";
 
 export default class TradeRepository {
 	async getAll(): Promise<Trade[]> {
-		return await prisma.trade.findMany();
+		return await prisma.trade.findMany({
+			include: {
+				buyOrder: true,
+				sellOrder: true,
+				buyer: true,
+				seller: true,
+			},
+			orderBy: { createdAt: "desc" },
+		});
 	}
 
 	async getById(id: string): Promise<Trade | null> {
@@ -69,6 +77,11 @@ export default class TradeRepository {
 							: OrderStatus.PARTIALLY_FILLED,
 				},
 			});
+
+			await tx.trade.update({
+				where: { id: newTrade.id },
+				data: { status: TradeStatus.SETTLED },
+			})
 
 			return newTrade;
 		});
